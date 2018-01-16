@@ -17,14 +17,16 @@ class ServerService
     {
         //$server = Server::where('is_recommend', true)
         $server = DB::table('Servers')
-                        ->orderBy('id')
+                        ->orderBy('id', 'desc')
                         ->first();
         return $server;
     }
     
     public function getAll()
     {
-        $servers = Server::all();
+        $servers = DB::table('Servers')
+                        ->orderBy('id', 'desc')
+                        ->get();
         return $servers;
     }
     
