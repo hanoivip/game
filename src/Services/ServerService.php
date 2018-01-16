@@ -16,7 +16,7 @@ class ServerService
     public function getRecommendServer()
     {
         //$server = Server::where('is_recommend', true)
-        $server = DB::table('Servers')
+        $server = DB::table('servers')
                         ->orderBy('id', 'desc')
                         ->first();
         return $server;
@@ -24,7 +24,7 @@ class ServerService
     
     public function getAll()
     {
-        $servers = DB::table('Servers')
+        $servers = DB::table('servers')
                         ->orderBy('id', 'desc')
                         ->get();
         return $servers;
