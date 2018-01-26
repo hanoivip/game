@@ -96,28 +96,33 @@ class GameController extends Controller
         abort(500);
 	}
 	
+	private function getRechargeViewData($uid)
+	{
+	    $all = $this->servers->getAll();
+	    $servers = [];
+	    foreach ($all as $s)
+	        $servers[$s->name] = $s->title;
+	        
+        $packages = Recharge::all();
+        $packs = [];
+        foreach ($packages as $p)
+            $packs[$p->code] = $p->title;
+        
+        $recents = $this->logs->getRecentEnter($uid);
+        $balanceInfo = $this->balance->getInfo($uid);
+        
+        return [ 'servers' => $servers, 'packs' => $packs,
+            'recents' => $recents, 'balances' => $balanceInfo];
+	}
+	
 	/**
 	 * Vào trang cho phép mua tiền tệ trong game.
 	 */
 	public function recharge()
 	{
-		$all = $this->servers->getAll();
-		$servers = [];
-		foreach ($all as $s)
-		    $servers[$s->name] = $s->title;
-		
-		$packages = Recharge::all();
-		$packs = [];
-		foreach ($packages as $p)
-		    $packs[$p->code] = $p->title;
-		
 		$uid = Auth::guard('token')->user()['id'];
-		$recents = $this->logs->getRecentEnter($uid);
-		
-		$balanceInfo = $this->balance->getInfo($uid);
-		
-		return view('hanoivip::recharge', 
-		    [ 'servers' => $servers, 'packs' => $packs, 'recents' => $recents, 'balances' => $balanceInfo ]);
+		$viewData = $this->getRechargeViewData($uid);
+		return view('hanoivip::recharge', $viewData);
 	}
 	
 	/**
@@ -136,8 +141,18 @@ class GameController extends Controller
 	    $server = $this->servers->getServerByName($svname);
 	    $uid = Auth::user()['id'];
 	    if ($this->games->recharge($server, $uid, $package))
-	        return view('hanoivip::recharge_success');
+	    {
+	        $viewData = $this->getRechargeViewData($uid);
+	        $viewData['message'] = "Chuyển xu thành công!";//TODO: use trans lang
+	        return view('hanoivip::recharge', $viewData);
+	        //return view('hanoivip::recharge_success');
+	    }
 	    else 
-	        return view('hanoivip::recharge_fail');
+	    {
+	        $viewData = $this->getRechargeViewData($uid);
+	        $viewData['message'] = "Chuyển xu thất bại!";
+	        return view('hanoivip::recharge', $viewData);
+	        //return view('hanoivip::recharge_fail');
+	    }
 	}
 }

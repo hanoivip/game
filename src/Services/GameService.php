@@ -109,20 +109,21 @@ class GameService
         }
         $coin = $recharge->coin;
         $cointype = $recharge->coin_type;
-        if (!$this->balance->remove($uid, $coin, "Recharge:" . $coin, $cointype))
+        if (!$this->balance->enough($uid, $coin, $cointype))
         {
-            Log::error("Game charge user fail.");
+            Log::error("Game user not enough coin");
             return false;
         }
+        
         $now = time();
-        $order = $now;
+        $order = uniqid();
         $rechargeParams = [
             'loginname' => $uid,
             'svid' => $server->name,
             'type' => $cointype,
             'value' => $coin,
             'tstamp' => $now,
-            'order' => $order,//TODO: multiple order in sec?
+            'order' => $order,
             'ticket' => md5($uid . $coin . $order . $now . config('game.recharge')),
         ];
         $rechargeUrl = $server->recharge_uri . '/pay.php?' . http_build_query($rechargeParams);
@@ -138,6 +139,12 @@ class GameService
             return false;
         }
         $this->logs->logRecharge($uid, $server, $package, $order);
+        
+        if (!$this->balance->remove($uid, $coin, "Recharge:" . $coin, $cointype))
+        {
+            Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
+        }
+        
         return true;
     }
     

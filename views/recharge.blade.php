@@ -10,6 +10,10 @@
 <p>Số dư:</p>{{$bal->balance}} <br/>
 @endforeach
 
+@if (isset($message))
+<p>{{$message}}</p>
+@endif
+
 
 {{ Form::open(['route' => 'doRecharge', 'method' => 'submit' ]) }}
 
