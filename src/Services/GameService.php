@@ -139,8 +139,8 @@ class GameService
             return false;
         }
         $this->logs->logRecharge($uid, $server, $package, $order);
-        
-        if (!$this->balance->remove($uid, $coin, "Recharge:" . $coin, $cointype))
+        $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
+        if (!$this->balance->remove($uid, $coin, $reason, $cointype))
         {
             Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
         }

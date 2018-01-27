@@ -4,6 +4,7 @@ namespace Hanoivip\Game\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Exception;
 use Hanoivip\Game\Recharge;
 use Hanoivip\Game\Services\GameService;
 use Hanoivip\Game\Services\ScheduleService;
@@ -89,9 +90,12 @@ class GameController extends Controller
 		if (empty($url))
 		    abort(500, "Server in maintainance");
 	    if (strpos($url, 'message=') !== false)
-	        return view('hanoivip::playfail', substr($url, strlen('message=')));
+	        return view('hanoivip::playfail', [ 'message' => substr($url, strlen('message=')) ]);
         if (strpos($url, 'uri=') !== false)
-            return redirect(substr($url, strlen('uri=')));
+        {
+            return view('hanoivip::play', [ 'playuri' => substr($url, strlen('uri=')) ]);
+            //return redirect(substr($url, strlen('uri=')));
+        }
             
         abort(500);
 	}
@@ -140,19 +144,27 @@ class GameController extends Controller
 	    
 	    $server = $this->servers->getServerByName($svname);
 	    $uid = Auth::user()['id'];
-	    if ($this->games->recharge($server, $uid, $package))
+	    $viewData = $this->getRechargeViewData($uid);
+	    
+	    try 
 	    {
-	        $viewData = $this->getRechargeViewData($uid);
-	        $viewData['message'] = "Chuyển xu thành công!";//TODO: use trans lang
-	        return view('hanoivip::recharge', $viewData);
-	        //return view('hanoivip::recharge_success');
+        	    if ($this->games->recharge($server, $uid, $package))
+        	    {
+        	        $viewData['message'] = "Chuyển xu thành công!";//TODO: use trans lang
+        	        return view('hanoivip::recharge', $viewData);
+        	        //return view('hanoivip::recharge_success');
+        	    }
+        	    else 
+        	    {
+        	        $viewData['error_message'] = "Chuyển xu thất bại!";
+        	        return view('hanoivip::recharge', $viewData);
+        	        //return view('hanoivip::recharge_fail');
+        	    }
 	    }
-	    else 
+	    catch (Exception $ex)
 	    {
-	        $viewData = $this->getRechargeViewData($uid);
-	        $viewData['message'] = "Chuyển xu thất bại!";
+	        $viewData['error_message'] = $ex->getMessage();
 	        return view('hanoivip::recharge', $viewData);
-	        //return view('hanoivip::recharge_fail');
 	    }
 	}
 }
