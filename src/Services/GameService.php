@@ -12,6 +12,8 @@ use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Hanoivip\Game\Events\UserRecharge;
+use Hanoivip\Game\Events\UserPlay;
 
 class GameService
 {
@@ -87,7 +89,7 @@ class GameService
             return;
         }
         $this->logs->logEnter($user['id'], $server);
-        
+        event(new UserPlay($user['id'], $server->name));
         return 'uri=' . $response['data']['iframe'];
     }
     
@@ -130,7 +132,7 @@ class GameService
         $response = CurlHelper::factory($rechargeUrl)->exec();
         if ($response['data'] === false)
         {
-            Log::error("Game recharge server exception.");
+            Log::error("Game recharge server exception. Returned content: " . $response['content']);
             return false;
         }
         if ($response['data']['code'] != 0)
@@ -144,6 +146,8 @@ class GameService
         {
             Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
         }
+        
+        event(new UserRecharge($uid, $cointype, $coin, $server->name));
         
         return true;
     }

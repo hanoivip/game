@@ -56,7 +56,10 @@ class GameController extends Controller
 		if (strpos($url, 'message=') !== false)
 		    return view('hanoivip::playfail', substr($url, strlen('message=')));
 		if (strpos($url, 'uri=') !== false)
-		    return redirect(substr($url, strlen('uri=')));
+		{
+		    return view('hanoivip::play', [ 'playuri' => substr($url, strlen('uri=')) ]);
+		    //return redirect(substr($url, strlen('uri=')));
+		}
 		
 		abort(500);
 	}

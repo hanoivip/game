@@ -3,7 +3,6 @@
 namespace Hanoivip\Game;
 
 use Illuminate\Support\ServiceProvider;
-use Hanoivip\Game\Contracts\IPayment;
 
 class LibServiceProvider extends ServiceProvider
 {
@@ -31,6 +30,5 @@ class LibServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind('GameService', \Hanoivip\Game\Services\GameService::class);
-        $this->app->bind(IPayment::class, \Hanoivip\Game\Services\FakePayment::class);
     }
 }
