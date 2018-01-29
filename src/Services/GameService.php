@@ -130,6 +130,7 @@ class GameService
             'value' => $coin,
             'tstamp' => $now,
             'order' => $order,
+            'golden' => $coin,
             'ticket' => md5($loginname . $coin . $order . $now . config('game.recharge')),
         ];
         $rechargeUrl = $server->recharge_uri . '/pay.php?' . http_build_query($rechargeParams);
