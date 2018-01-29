@@ -50,6 +50,7 @@ class GameService
      * 
      * @param Server $server
      * @param Authenticatable $user
+     * @throws Exception
      * @return string Game url
      */
     public function enter($server, $user)
@@ -70,23 +71,24 @@ class GameService
             }
         }
         //Log::debug(print_r($user, true));
+        $loginname = $user['name'] . '.' . $server->name;
         $enterParam = [
             'loginid' => $user['id'],
-            'loginname' => $user['id'],//need loginname builder $user['email'],
+            'loginname' => $loginname,
             'svid' => $server->name,
-            'ticket' => md5($user['id'] . $user['id'] . $server->name . config('game.loginkey')),
+            'ticket' => md5($user['id'] . $loginname . $server->name . config('game.loginkey')),
         ];
         $enterUrl = $server->login_uri . '/login.php?' . http_build_query($enterParam);
         $response = CurlHelper::factory($enterUrl)->exec();
         if ($response['data'] === false)
         {
             Log::error("Game enter server exception. Raw content = " . $response['content']);
-            return;
+            throw new Exception("Máy chủ đang bảo trì. Vui lòng thử lại sau hoặc liên hệ GM.");
         }
         if ($response['data']['code'] != 0)
         {
             Log::error("Game enter server error. Returned code = " . $response['data']['code']);
-            return;
+            throw new Exception("Máy chủ đang bảo trì. Vui lòng thử lại sau hoặc liên hệ GM.");
         }
         $this->logs->logEnter($user['id'], $server);
         event(new UserPlay($user['id'], $server->name));
@@ -96,12 +98,13 @@ class GameService
     /**
      * 
      * @param Server $server
-     * @param number $uid
+     * @param Authenticatable $uid
      * @param string $package
      * @return boolean
      */
-    public function recharge($server, $uid, $package)
+    public function recharge($server, $user, $package)
     {
+        $uid = $user['id'];
         $recharge = Recharge::where('code', $package)
                         ->first();
         if (empty($recharge))
@@ -119,21 +122,22 @@ class GameService
         
         $now = time();
         $order = uniqid();
+        $loginname = $user['name'] . '.' . $server->name;
         $rechargeParams = [
-            'loginname' => $uid,
+            'loginname' => $loginname,
             'svid' => $server->name,
             'type' => $cointype,
             'value' => $coin,
             'tstamp' => $now,
             'order' => $order,
-            'ticket' => md5($uid . $coin . $order . $now . config('game.recharge')),
+            'ticket' => md5($loginname . $coin . $order . $now . config('game.recharge')),
         ];
         $rechargeUrl = $server->recharge_uri . '/pay.php?' . http_build_query($rechargeParams);
         $response = CurlHelper::factory($rechargeUrl)->exec();
         if ($response['data'] === false)
         {
             Log::error("Game recharge server exception. Returned content: " . $response['content']);
-            return false;
+            throw new Exception("Chuyển xu vào game không thành công. Vui lòng liên hệ GM.");
         }
         if ($response['data']['code'] != 0)
         {

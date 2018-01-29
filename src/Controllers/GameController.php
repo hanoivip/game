@@ -4,6 +4,7 @@ namespace Hanoivip\Game\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\Game\Recharge;
 use Hanoivip\Game\Services\GameService;
@@ -48,20 +49,7 @@ class GameController extends Controller
 	public function quickplay()
 	{
 		$server = $this->servers->getRecommendServer();
-		if (empty($server))
-		    abort(500, "Game in maintainance");
-		$url = $this->games->enter($server, Auth::user());
-		if (empty($url))
-		    abort(500, "Server in maintainance");
-		if (strpos($url, 'message=') !== false)
-		    return view('hanoivip::playfail', substr($url, strlen('message=')));
-		if (strpos($url, 'uri=') !== false)
-		{
-		    return view('hanoivip::play', [ 'playuri' => substr($url, strlen('uri=')) ]);
-		    //return redirect(substr($url, strlen('uri=')));
-		}
-		
-		abort(500);
+		return $this->play($server->name);
 	}
 	
 	/**
@@ -86,21 +74,26 @@ class GameController extends Controller
 	 */
 	public function play($svname)
 	{
-	    $server = $this->servers->getServerByName($svname);
-	    if (empty($server))
-		    abort(500, "Server bogus");
-		$url = $this->games->enter($server, Auth::user());
-		if (empty($url))
-		    abort(500, "Server in maintainance");
-	    if (strpos($url, 'message=') !== false)
-	        return view('hanoivip::playfail', [ 'message' => substr($url, strlen('message=')) ]);
-        if (strpos($url, 'uri=') !== false)
-        {
-            return view('hanoivip::play', [ 'playuri' => substr($url, strlen('uri=')) ]);
-            //return redirect(substr($url, strlen('uri=')));
-        }
-            
-        abort(500);
+	    try 
+	    {
+        	    $server = $this->servers->getServerByName($svname);
+        	    if (empty($server))
+        	        throw new Exception("Cụm máy chủ không tồn tại.");
+        		$url = $this->games->enter($server, Auth::user());
+        		if (empty($url))
+        		    throw new Exception("Cụm máy chủ đang bảo trì.");
+        	    if (strpos($url, 'message=') !== false)
+    	        return view('hanoivip::playfail', [ 'message' => substr($url, strlen('message=')) ]);
+            if (strpos($url, 'uri=') !== false)
+            {
+                return view('hanoivip::play', [ 'playuri' => substr($url, strlen('uri=')) ]);
+            }
+	    }
+	    catch (Exception $ex)
+	    {
+	        Log::error('Game play game exception. Msg:' . $ex->getMessage());
+	        return view('hanoivip::playfail', [ 'error_message' => $ex->getMessage()]);
+	    }
 	}
 	
 	private function getRechargeViewData($uid)
@@ -146,12 +139,12 @@ class GameController extends Controller
 	    $package = $request->input('package');
 	    
 	    $server = $this->servers->getServerByName($svname);
-	    $uid = Auth::user()['id'];
-	    $viewData = $this->getRechargeViewData($uid);
+	    $user = Auth::user();
+	    $viewData = $this->getRechargeViewData($user['id']);
 	    
 	    try 
 	    {
-        	    if ($this->games->recharge($server, $uid, $package))
+        	    if ($this->games->recharge($server, $user, $package))
         	    {
         	        $viewData['message'] = "Chuyển xu thành công!";//TODO: use trans lang
         	        return view('hanoivip::recharge', $viewData);
