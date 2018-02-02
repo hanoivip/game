@@ -2,5 +2,5 @@
 return [
     'code' => 'gamecode',
     'loginkey' => 'ngoalongviet.com-ondinh-benvung-congnhan',
-    'recharegkey' => 'nl.vn1@2017~~',
+    'recharegkey' => 'nl.vn1@2017~~'
 ];

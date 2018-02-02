@@ -4,6 +4,7 @@ namespace Hanoivip\Game\Services;
 
 use Hanoivip\Game\Recharge;
 use Hanoivip\Game\Server;
+use Hanoivip\Game\Contracts\IGameOperator;
 use Hanoivip\Game\Contracts\ServerState;
 use Hanoivip\PaymentClient\BalanceUtil;
 use Carbon\Carbon;
@@ -32,12 +33,15 @@ class GameService
     
     protected $balance;
     
+    protected $operator;
+    
     public function __construct(ServerService $servers, 
-        UserLogService $logs, BalanceUtil $balance)
+        UserLogService $logs, BalanceUtil $balance, IGameOperator $operator)
     {
         $this->servers = $servers;
         $this->logs = $logs;
         $this->balance = $balance;
+        $this->operator = $operator;
     }
     
     /**
@@ -70,29 +74,21 @@ class GameService
                 return 'message=Game server is full';
             }
         }
-        //Log::debug(print_r($user, true));
-        $loginname = $user['name'] . '.' . $server->name;
-        $enterParam = [
-            'loginid' => $user['id'],
-            'loginname' => $loginname,
-            'svid' => $server->name,
-            'ticket' => md5($user['id'] . $loginname . $server->name . config('game.loginkey')),
-        ];
-        $enterUrl = $server->login_uri . '/login.php?' . http_build_query($enterParam);
-        $response = CurlHelper::factory($enterUrl)->exec();
-        if ($response['data'] === false)
+        if (empty($this->operator))
         {
-            Log::error("Game enter server exception. Raw content = " . $response['content']);
+            Log::error("Game operator is not set");
             throw new Exception("Máy chủ đang bảo trì. Vui lòng thử lại sau hoặc liên hệ GM.");
         }
-        if ($response['data']['code'] != 0)
+        //TODO: make EnterResponse here;
+        $uri = $this->operator->enter($user, $server);
+        if (empty($uri))
         {
-            Log::error("Game enter server error. Returned code = " . $response['data']['code']);
+            Log::error("Game enter uri is empty");
             throw new Exception("Máy chủ đang bảo trì. Vui lòng thử lại sau hoặc liên hệ GM.");
         }
         $this->logs->logEnter($user['id'], $server);
         event(new UserPlay($user['id'], $server->name));
-        return 'uri=' . $response['data']['iframe'];
+        return 'uri=' . $uri;
     }
     
     /**
@@ -119,32 +115,18 @@ class GameService
             Log::error("Game user not enough coin");
             return false;
         }
-        
-        $now = time();
-        $order = uniqid();
-        $loginname = $user['name'] . '.' . $server->name;
-        $rechargeParams = [
-            'loginname' => $loginname,
-            'svid' => $server->name,
-            'type' => $cointype,
-            'value' => $coin,
-            'tstamp' => $now,
-            'order' => $order,
-            'golden' => $coin,
-            'ticket' => md5($loginname . $coin . $order . $now . config('game.recharge')),
-        ];
-        $rechargeUrl = $server->recharge_uri . '/pay.php?' . http_build_query($rechargeParams);
-        $response = CurlHelper::factory($rechargeUrl)->exec();
-        if ($response['data'] === false)
+        if (empty($this->operator))
         {
-            Log::error("Game recharge server exception. Returned content: " . $response['content']);
+            Log::error("Game operator is not set");
             throw new Exception("Chuyển xu vào game không thành công. Vui lòng liên hệ GM.");
         }
-        if ($response['data']['code'] != 0)
+        $order = uniqid();
+        if (!$this->operator->recharge($user, $server, $order, $recharge))
         {
-            Log::error("Game recharge server error. Code=" . $response['data']['code']);
+            Log::error("Game game operator return fail.");
             return false;
         }
+        
         $this->logs->logRecharge($uid, $server, $package, $order);
         $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
         if (!$this->balance->remove($uid, $coin, $reason, $cointype))
@@ -153,7 +135,6 @@ class GameService
         }
         
         event(new UserRecharge($uid, $cointype, $coin, $server->name));
-        
         return true;
     }
     
@@ -219,17 +200,9 @@ class GameService
         {
             try 
             {
-                $onlineUrl = $server->operate_uri . "/online.php";
-                $response = \CurlHelper::factory($onlineUrl)->exec();
-                if ($response['data'] === false)
-                {
-                    Log::error("Game query online number of {$server->name} fail. Skip!");
-                    $onlines[$server->name] = -1;
-                }
-                else 
-                {
-                    $onlines[$server->name] = $response['data']['online'];
-                }
+                if (empty($this->operator))
+                    throw new Exception("Game operator is not set.");
+                $onlines[$server->name] = $this->operator->online($server);
             }
             catch (Exception $ex)
             {
@@ -257,16 +230,17 @@ class GameService
         $all = $this->servers->getAll();
         foreach ($all as $server)
         {
-            // fetch and cache
-            $rankUrl = $server->operate_uri . "/rank.php";
-            $response = \CurlHelper::factory($rankUrl)->exec();
-            if ($response['data'] === false)
+            try 
             {
-                Log::error("Game fetch server rank exception.");
+                if (empty($this->operator))
+                    throw new Exception("Game operator is not set.");
+                $ranks[$server->name] = $this->operator->rank($server);
+            }
+            catch (Exception $ex)
+            {
+                Log::error("Game query ranks of {$server->name} fail. Skip!");
                 $ranks[$server->name] = [];
             }
-            else
-                $ranks[$server->name] = $response['data'];
         }
         
         $expires = Carbon::now()->addSeconds(self::RANK_CACHE_DURATION);

@@ -11,7 +11,7 @@ Route::namespace('Hanoivip\Game\Controllers')->prefix('api')->group(function () 
     Route::get('/server/schedule', 'DirectGameController@schedule');
     
     // Mua xu nhanh ( không đăng nhập )
-    Route::get('/recharge/svname/{svname}/user/{user}/coin/{coin}', 'DirectGameController@recharge');
+    Route::get('/recharge/{svname}/{user}/{coin}', 'DirectGameController@recharge');
     
     // Xem trạng thái các máy chủ
     Route::get('/server/status', 'DirectGameController@serverstatus');
