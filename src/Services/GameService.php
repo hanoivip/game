@@ -96,9 +96,10 @@ class GameService
      * @param Server $server
      * @param Authenticatable $uid
      * @param string $package
+     * @param array $params
      * @return boolean
      */
-    public function recharge($server, $user, $package)
+    public function recharge($server, $user, $package, $params)
     {
         $uid = $user['id'];
         $recharge = Recharge::where('code', $package)
@@ -121,7 +122,7 @@ class GameService
             throw new Exception("Chuyển xu vào game không thành công. Vui lòng liên hệ GM.");
         }
         $order = uniqid();
-        if (!$this->operator->recharge($user, $server, $order, $recharge))
+        if (!$this->operator->recharge($user, $server, $order, $recharge, $params))
         {
             Log::error("Game game operator return fail.");
             return false;
@@ -134,7 +135,10 @@ class GameService
             Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
         }
         
-        event(new UserRecharge($uid, $cointype, $coin, $server->name));
+        $event = new UserRecharge($uid, $cointype, $coin, $server->name);
+        if (!empty($params))
+            $event->params = $params;
+        event($event);
         return true;
     }
     

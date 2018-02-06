@@ -12,6 +12,8 @@ class UserRecharge
     
     public $svname;
     
+    public $params;
+    
     public function __construct($uid, $cointype, $coin, $svname)
     {
         $this->uid = $uid;

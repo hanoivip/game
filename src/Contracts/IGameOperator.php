@@ -22,9 +22,10 @@ interface IGameOperator
      * @param Server $server
      * @param string $order Order ID, Mapping id
      * @param Recharge $package
+     * @param array $params
      * @return boolean
      */
-    public function recharge($user, $server, $order, $package);
+    public function recharge($user, $server, $order, $package, $params = null);
     
     /**
      * 

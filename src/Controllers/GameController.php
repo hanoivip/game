@@ -135,6 +135,8 @@ class GameController extends Controller
 	 */
 	public function doRecharge(Request $request)
 	{
+	    $params = $request->all();
+	    Log::debug('Post keys:' . print_r($params, true));
 	    $svname = $request->input('svname');
 	    $package = $request->input('package');
 	    
@@ -144,7 +146,7 @@ class GameController extends Controller
 	    
 	    try 
 	    {
-        	    if ($this->games->recharge($server, $user, $package))
+        	    if ($this->games->recharge($server, $user, $package, $params))
         	    {
         	        $viewData['message'] = "Chuyển xu thành công!";//TODO: use trans lang
         	        return view('hanoivip::recharge', $viewData);
