@@ -142,21 +142,20 @@ class GameController extends Controller
 	    
 	    $server = $this->servers->getServerByName($svname);
 	    $user = Auth::user();
-	    $viewData = $this->getRechargeViewData($user['id']);
 	    
 	    try 
 	    {
         	    if ($this->games->recharge($server, $user, $package, $params))
         	    {
+        	        $viewData = $this->getRechargeViewData($user['id']);
         	        $viewData['message'] = "Chuyển xu thành công!";//TODO: use trans lang
         	        return view('hanoivip::recharge', $viewData);
-        	        //return view('hanoivip::recharge_success');
         	    }
         	    else 
         	    {
+        	        $viewData = $this->getRechargeViewData($user['id']);
         	        $viewData['error_message'] = "Chuyển xu thất bại!";
         	        return view('hanoivip::recharge', $viewData);
-        	        //return view('hanoivip::recharge_fail');
         	    }
 	    }
 	    catch (Exception $ex)
