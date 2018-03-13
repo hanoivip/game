@@ -136,24 +136,23 @@ class GameController extends Controller
 	public function doRecharge(Request $request)
 	{
 	    $params = $request->all();
-	    Log::debug('Post keys:' . print_r($params, true));
+	    //Log::debug('Post keys:' . print_r($params, true));
 	    $svname = $request->input('svname');
 	    $package = $request->input('package');
 	    
 	    $server = $this->servers->getServerByName($svname);
 	    $user = Auth::user();
+	    $viewData = $this->getRechargeViewData($user['id']);
 	    
 	    try 
 	    {
         	    if ($this->games->recharge($server, $user, $package, $params))
         	    {
-        	        $viewData = $this->getRechargeViewData($user['id']);
         	        $viewData['message'] = "Chuyển xu thành công!";//TODO: use trans lang
         	        return view('hanoivip::recharge', $viewData);
         	    }
         	    else 
         	    {
-        	        $viewData = $this->getRechargeViewData($user['id']);
         	        $viewData['error_message'] = "Chuyển xu thất bại!";
         	        return view('hanoivip::recharge', $viewData);
         	    }
