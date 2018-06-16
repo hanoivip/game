@@ -86,8 +86,8 @@ class GameService
             Log::error("Game enter uri is empty");
             throw new Exception("Máy chủ đang bảo trì. Vui lòng thử lại sau hoặc liên hệ GM.");
         }
-        $this->logs->logEnter($user['id'], $server);
-        event(new UserPlay($user['id'], $server->name));
+        $this->logs->logEnter($user->getAuthIdentifier(), $server);
+        event(new UserPlay($user->getAuthIdentifier(), $server->name));
         return 'uri=' . $uri;
     }
     

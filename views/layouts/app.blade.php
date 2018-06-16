@@ -6,8 +6,8 @@
 </head>
 
 <body>
-      @if (Auth::guard('token')->check())
-            <p class="User"> Chào <b>{{ Auth::guard('token')->user()['name'] }}</b>, 
+      @if (Auth::check())
+            <p class="User"> Chào <b>{{ Auth::user()->getAuthIdentifier() }}</b>, 
             <a href="{{route('logout')}}" title="Thoát">
             <b>Thoát</b></a></p>
       @endif

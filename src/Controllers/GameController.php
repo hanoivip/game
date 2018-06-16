@@ -61,9 +61,9 @@ class GameController extends Controller
 		$params['servers'] = $this->servers->getAll();
 		$params['schedules'] = $this->schedule->getAll();
 		$params['ranks'] = $this->games->rank();
-		if (Auth::guard('token')->check())
+		if (Auth::check())
 		{
-		    $params['recents'] = $this->logs->getRecentEnter(Auth::guard('token')->user()['id']);
+		    $params['recents'] = $this->logs->getRecentEnter(Auth::user()->getAuthIdentifier());
 		}
 		return view('hanoivip::serverlist', $params);
 	}
@@ -76,13 +76,13 @@ class GameController extends Controller
 	{
 	    try 
 	    {
-        	    $server = $this->servers->getServerByName($svname);
-        	    if (empty($server))
-        	        throw new Exception("Cụm máy chủ không tồn tại.");
-        		$url = $this->games->enter($server, Auth::user());
-        		if (empty($url))
-        		    throw new Exception("Cụm máy chủ đang bảo trì.");
-        	    if (strpos($url, 'message=') !== false)
+    	    $server = $this->servers->getServerByName($svname);
+    	    if (empty($server))
+    	        throw new Exception("Cụm máy chủ không tồn tại.");
+    		$url = $this->games->enter($server, Auth::user());
+    		if (empty($url))
+    		    throw new Exception("Cụm máy chủ đang bảo trì.");
+    	    if (strpos($url, 'message=') !== false)
     	        return view('hanoivip::playfail', [ 'message' => substr($url, strlen('message=')) ]);
             if (strpos($url, 'uri=') !== false)
             {
@@ -120,7 +120,7 @@ class GameController extends Controller
 	 */
 	public function recharge()
 	{
-		$uid = Auth::guard('token')->user()['id'];
+	    $uid = Auth::user()->getAuthIdentifier();
 		$viewData = $this->getRechargeViewData($uid);
 		return view('hanoivip::recharge', $viewData);
 	}
@@ -142,7 +142,7 @@ class GameController extends Controller
 	    
 	    $server = $this->servers->getServerByName($svname);
 	    $user = Auth::user();
-	    $viewData = $this->getRechargeViewData($user['id']);
+	    $viewData = $this->getRechargeViewData($user->getAuthIdentifier());
 	    
 	    try 
 	    {
