@@ -94,14 +94,14 @@ class GameService
     /**
      * 
      * @param Server $server
-     * @param Authenticatable $uid
+     * @param Authenticatable $user
      * @param string $package
      * @param array $params
      * @return boolean
      */
     public function recharge($server, $user, $package, $params)
     {
-        $uid = $user['id'];
+        $uid = $user->getAuthIdentifier();
         $recharge = Recharge::where('code', $package)
                         ->first();
         if (empty($recharge))
