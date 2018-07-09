@@ -180,7 +180,7 @@ class GameController extends Controller
 	    {
 	        $bag = $this->userBags->getUserBag($user->getAuthIdentifier());
 	        $items = $bag->list();
-	        if (gettype($items) != "array")
+	        if (gettype($items) == "object")
 	            $items = [ $items ];
 	        $servers = $this->servers->getAll();
 	        return view('hanoivip::bag', ['items' => $items, 'servers' => $servers]);
