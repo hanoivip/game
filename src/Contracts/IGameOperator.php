@@ -12,7 +12,6 @@ interface IGameOperator
      * 
      * @param Authenticatable $user
      * @param Server $server
-     * @return PlayResponse
      */
     public function enter($user, $server);
     
@@ -40,4 +39,15 @@ interface IGameOperator
      * @return array
      */
     public function rank($server);
+    
+    /**
+     * 
+     * @param Authenticatable $user
+     * @param Server $server
+     * @param string $order
+     * @param number $itemId
+     * @param number $itemCount
+     * @param array $params
+     */
+    public function sentItem($user, $server, $order, $itemId, $itemCount, $params = null);
 }

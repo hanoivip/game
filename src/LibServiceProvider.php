@@ -6,11 +6,6 @@ use Illuminate\Support\ServiceProvider;
 
 class LibServiceProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap any application services.
-     *
-     * @return void
-     */
     public function boot()
     {
         $this->publishes([
@@ -22,11 +17,6 @@ class LibServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
     }
 
-    /**
-     * Register any application services.
-     *
-     * @return void
-     */
     public function register()
     {
         $this->app->bind('GameService', \Hanoivip\Game\Services\GameService::class);

@@ -12,6 +12,7 @@ use Hanoivip\Game\Services\ScheduleService;
 use Hanoivip\Game\Services\ServerService;
 use Hanoivip\Game\Services\UserLogService;
 use Hanoivip\PaymentClient\BalanceUtil;
+use Hanoivip\UserBag\Services\UserBagService;
 
 class GameController extends Controller
 {
@@ -25,20 +26,28 @@ class GameController extends Controller
     
     protected $balance;
     
+    protected $userBags;
+
+    
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct(GameService $games, 
-        ServerService $servers, ScheduleService $schedule,
-        UserLogService $logs, BalanceUtil $balance)
+    public function __construct(
+        GameService $games, 
+        ServerService $servers, 
+        ScheduleService $schedule,
+        UserLogService $logs, 
+        BalanceUtil $balance, 
+        UserBagService $userBags)
     {
         $this->games = $games;
         $this->servers = $servers;
         $this->schedule = $schedule;
         $this->logs = $logs;
         $this->balance = $balance;
+        $this->userBags = $userBags;
     }
 
     /**
@@ -92,7 +101,7 @@ class GameController extends Controller
 	    catch (Exception $ex)
 	    {
 	        Log::error('Game play game exception. Msg:' . $ex->getMessage());
-	        return view('hanoivip::playfail', [ 'error_message' => $ex->getMessage()]);
+	        return view('hanoivip::playfail', [ 'error_message' => "Lỗi xảy ra. Thử lại trước khi liên hệ GM hỗ trợ."]);
 	    }
 	}
 	
@@ -136,7 +145,6 @@ class GameController extends Controller
 	public function doRecharge(Request $request)
 	{
 	    $params = $request->all();
-	    //Log::debug('Post keys:' . print_r($params, true));
 	    $svname = $request->input('svname');
 	    $package = $request->input('package');
 	    
@@ -159,8 +167,57 @@ class GameController extends Controller
 	    }
 	    catch (Exception $ex)
 	    {
-	        $viewData['error_message'] = $ex->getMessage();
+	        $viewData['error_message'] = __('game.recharge.exception');
+	        Log::error("Game recharge exception" . $ex->getMessage());
 	        return view('hanoivip::recharge', $viewData);
 	    }
+	}
+	
+	public function bagList()
+	{
+	    $user = Auth::user();
+	    try 
+	    {
+	        $bag = $this->userBags->getUserBag($user->getAuthIdentifier());
+	        $items = $bag->list();
+	        if (gettype($items) != "array")
+	            $items = [ $items ];
+	        $servers = $this->servers->getAll();
+	        return view('hanoivip::bag', ['items' => $items, 'servers' => $servers]);
+	    }
+	    catch (Exception $ex)
+	    {
+	        Log::error("Game list user bag item ex:" . $ex->getMessage());
+	        return view('hanoivip::bag', ['error' => __('bag.list.exception')]);
+	    }
+	}
+	
+	public function bagExchange(Request $request)
+	{
+	    $uid = Auth::user()->getAuthIdentifier();
+	    $svname = $request->input('svname');
+	    $itemId = $request->input('itemId');
+	    $count = $request->input('count');
+	    $params = $request->all();
+	    $error = '';
+	    $message = '';
+	    try
+	    {
+	        $user = Auth::user();
+	        $server = $this->servers->getServerByName($svname);
+	        $result = $this->games->sendItem($server, $user, $itemId, $count, $params);
+	        if (gettype($result) == "string")
+	            $error = $result;
+	        else if ($result)
+	            $message =  __('bag.exchange.success');
+	        else 
+	            $error =  __('bag.exchange.fail');
+	    }
+	    catch (Exception $ex)
+	    {
+	       Log::error("Game exchange user item exception. Ex:" . $ex->getMessage());
+	       $error = __('bag.exchange.exception');
+	    }
+	    return view('hanoivip::bag-exchange-result', ['error' => $error, 'message' => $message]);
 	}
 }

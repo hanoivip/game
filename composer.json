@@ -10,7 +10,8 @@
 		"laravel/tinker" : "~1.0",
 		"laravelcollective/html" : "^5.4.0",
 		"mervick/curl-helper" : "^1.1",
-		"hanoivip/payment-client": "dev-master"
+		"hanoivip/payment-client": "dev-master",
+		"hanoivip/user-bag": "dev-master"
 	},
 	"autoload" : {
 		"psr-4" : {

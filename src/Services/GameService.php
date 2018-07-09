@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Hanoivip\Game\Events\UserRecharge;
 use Hanoivip\Game\Events\UserPlay;
+use Hanoivip\UserBag\Services\UserBagService;
+use Hanoivip\Events\Game\UserExchangeItem;
 
 class GameService
 {
@@ -35,13 +37,20 @@ class GameService
     
     protected $operator;
     
-    public function __construct(ServerService $servers, 
-        UserLogService $logs, BalanceUtil $balance, IGameOperator $operator)
+    protected $userBags;
+    
+    public function __construct(
+        ServerService $servers, 
+        UserLogService $logs, 
+        BalanceUtil $balance, 
+        IGameOperator $operator,
+        UserBagService $userBags)
     {
         $this->servers = $servers;
         $this->logs = $logs;
         $this->balance = $balance;
         $this->operator = $operator;
+        $this->userBags = $userBags;
     }
     
     /**
@@ -250,5 +259,34 @@ class GameService
         $expires = Carbon::now()->addSeconds(self::RANK_CACHE_DURATION);
         Cache::add($key, $ranks, $expires);
         return $ranks;
+    }
+    
+    /**
+     * 
+     * @param Server $server
+     * @param Authenticatable $user
+     * @param string $itemId
+     * @param number $itemCount
+     */
+    public function sendItem($server, $user, $itemId, $itemCount, $params = null)
+    {
+        $uid = $user->getAuthIdentifier();
+        $bag = $this->userBags->getUserBag($uid);
+        if (empty($bag))
+            throw new Exception("Game user bag can not be created!");
+        if (!$bag->enough($itemId, $itemCount))
+            return __('bag.exchange.not-enough');
+        // Send Item to game
+        $order = uniqid();
+        if (!$this->operator->sentItem($user, $server, $order, $itemId, $itemCount, $params))
+        {
+            Log::error("Game request item exchange fail.");
+            return false;
+        }
+        if (!$bag->removeItem($itemId, $itemCount))
+            Log::error("Game item exchanged but can not removed from bag!");
+        // Log
+        event(new UserExchangeItem($user, $server, $itemId, $itemCount, $params));
+        return true; 
     }
 }
