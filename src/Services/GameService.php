@@ -118,32 +118,40 @@ class GameService
             Log::error("Game recharge package bogus");
             return false;
         }
+        $lock = "Recharging" . $uid;
+        if (!Cache::lock($lock, 120)->get())
+        {
+            Log::error("Game other recharge is in progress..");
+            return false;
+        }
         $coin = $recharge->coin;
         $cointype = $recharge->coin_type;
         if (!$this->balance->enough($uid, $coin, $cointype))
         {
             Log::error("Game user not enough coin");
+            Cache::lock($lock)->release();
             return false;
         }
         if (empty($this->operator))
         {
             Log::error("Game operator is not set");
+            Cache::lock($lock)->release();
             throw new Exception("Chuyển xu vào game không thành công. Vui lòng liên hệ GM.");
         }
         $order = uniqid();
         if (!$this->operator->recharge($user, $server, $order, $recharge, $params))
         {
             Log::error("Game game operator return fail.");
+            Cache::lock($lock)->release();
             return false;
         }
-        
         $this->logs->logRecharge($uid, $server, $package, $order);
         $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
         if (!$this->balance->remove($uid, $coin, $reason, $cointype))
         {
             Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
         }
-        
+        Cache::lock($lock)->release();
         $event = new UserRecharge($uid, $cointype, $coin, $server->name);
         if (!empty($params))
             $event->params = $params;
