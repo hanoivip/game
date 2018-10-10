@@ -28,6 +28,10 @@ class GameService
     
     const ONLINE_CACHE_PREFIX = "OnlineStat";
     
+    const ROLE_CACHE_PREFIX = "RoleOf";
+    
+    const ROLE_CACHE_DURATION = 1800;//30mins
+    
     
     protected $servers;
     
@@ -139,9 +143,18 @@ class GameService
             throw new Exception("Chuyển xu vào game không thành công. Vui lòng liên hệ GM.");
         }
         $order = uniqid();
-        if (!$this->operator->recharge($user, $server, $order, $recharge, $params))
+        try
         {
-            Log::error("Game game operator return fail.");
+            if (!$this->operator->recharge($user, $server, $order, $recharge, $params))
+            {
+                Log::error("Game game operator return fail.");
+                Cache::lock($lock)->release();
+                return false;
+            }
+        }
+        catch (Exception $ex)
+        {
+            Log::error("Game game operator exception. Ex:" . $ex->getMessage());
             Cache::lock($lock)->release();
             return false;
         }
@@ -232,7 +245,7 @@ class GameService
             }
         }
         $expires = Carbon::now()->addSeconds(self::ONLINE_CACHE_DURATION);
-        Cache::add(self::ONLINE_CACHE_PREFIX, $onlines, $expires);
+        Cache::put(self::ONLINE_CACHE_PREFIX, $onlines, $expires);
         return $onlines;
     }
     
@@ -265,7 +278,7 @@ class GameService
         }
         
         $expires = Carbon::now()->addSeconds(self::RANK_CACHE_DURATION);
-        Cache::add($key, $ranks, $expires);
+        Cache::put($key, $ranks, $expires);
         return $ranks;
     }
     
@@ -296,5 +309,33 @@ class GameService
         // Log
         event(new UserExchangeItem($user, $server, $itemId, $itemCount, $params));
         return true; 
+    }
+    
+    /**
+     * Query and cached info
+     * 
+     * @param number $uid
+     * @param Server $server
+     */
+    public function queryRoles($uid, $server)
+    {
+        //Log::debug(print_r($server, true));
+        $key = self::ROLE_CACHE_PREFIX . $uid . '_' . $server->name;
+        if (Cache::has($key))
+        {
+            return Cache::get($key);
+        }
+        $roles = [];
+        try 
+        {
+            $roles = $this->operator->characters($uid, $server);
+        } 
+        catch (Exception $e) 
+        {
+            Log::error($e->getMessage());
+        }
+        if (!empty($roles))
+            Cache::put($key, $roles, Carbon::now()->addMinutes(self::ROLE_CACHE_DURATION));
+        return $roles;
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\Game\Recharge;
+use Hanoivip\Game\Server;
 use Hanoivip\Game\Services\GameService;
 use Hanoivip\Game\Services\ScheduleService;
 use Hanoivip\Game\Services\ServerService;
@@ -105,23 +106,55 @@ class GameController extends Controller
 	    }
 	}
 	
-	private function getRechargeViewData($uid)
+	/**
+	 * 
+	 * @param number $uid
+	 * @param Server $selectedServer Name of selected server
+	 */
+	private function getRechargeViewData($uid, $selectedServer = null)
 	{
-	    $all = $this->servers->getAll();
-	    $servers = [];
+	    $servers = $this->servers->getAll();
+	    /*$servers = [];
 	    foreach ($all as $s)
 	        $servers[$s->name] = $s->title;
-	        
+	    */    
         $packages = Recharge::all();
-        $packs = [];
+        /*$packs = [];
         foreach ($packages as $p)
             $packs[$p->code] = $p->title;
-        
+        */
         $recents = $this->logs->getRecentEnter($uid);
         $balanceInfo = $this->balance->getInfo($uid);
         
-        return [ 'servers' => $servers, 'packs' => $packs,
-            'recents' => $recents, 'balances' => $balanceInfo];
+        $roles = [];
+        if (!empty($selectedServer))
+            $roles = $this->games->queryRoles($uid, $selectedServer);
+        else if ($servers->isNotEmpty())
+            $roles = $this->games->queryRoles($uid, $servers->first());
+        //Log::debug(print_r($roles, true));
+        $data = [ 'servers' => $servers, 'packs' => $packages,
+            'recents' => $recents, 'balances' => $balanceInfo, 
+            'roles' => $roles];
+        if (!empty($selectedServer))
+            $data['selected'] = $selectedServer->name;
+        return $data;
+	}
+	
+	public function queryRoles(Request $request)
+	{
+	    $svname = $request->input('svname');
+	    $selected = $this->servers->getServerByName($svname);
+	    $uid = Auth::user()->getAuthIdentifier();
+	    if ($request->ajax())
+	    {
+	        $roles = $this->games->queryRoles($uid, $selected);
+	        return [$svname => $roles];
+	    }
+	    else
+	    {
+	        $viewData = $this->getRechargeViewData($uid, $selected);
+	        return view('hanoivip::recharge', $viewData);
+	    }
 	}
 	
 	/**
@@ -150,26 +183,22 @@ class GameController extends Controller
 	    
 	    $server = $this->servers->getServerByName($svname);
 	    $user = Auth::user();
-	    $viewData = $this->getRechargeViewData($user->getAuthIdentifier());
 	    
 	    try 
 	    {
-        	    if ($this->games->recharge($server, $user, $package, $params))
-        	    {
-        	        $viewData['message'] = "Chuyển xu thành công!";//TODO: use trans lang
-        	        return view('hanoivip::recharge', $viewData);
-        	    }
-        	    else 
-        	    {
-        	        $viewData['error_message'] = "Chuyển xu thất bại!";
-        	        return view('hanoivip::recharge', $viewData);
-        	    }
+    	    if ($this->games->recharge($server, $user, $package, $params))
+    	    {
+    	        return view('hanoivip::recharge-result', ['message' => __('recharge.success')]);
+    	    }
+    	    else 
+    	    {
+    	        return view('hanoivip::recharge-result', ['error_message' => __('recharge.fail')]);
+    	    }
 	    }
 	    catch (Exception $ex)
 	    {
-	        $viewData['error_message'] = __('game.recharge.exception');
-	        Log::error("Game recharge exception" . $ex->getMessage());
-	        return view('hanoivip::recharge', $viewData);
+	        Log::error("Game recharge exception:" . $ex->getMessage());
+	        return view('hanoivip::recharge-result', ['error_message' => __('recharge.exception')]);
 	    }
 	}
 	

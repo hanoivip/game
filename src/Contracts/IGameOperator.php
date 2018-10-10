@@ -50,4 +50,12 @@ interface IGameOperator
      * @param array $params
      */
     public function sentItem($user, $server, $order, $itemId, $itemCount, $params = null);
+    
+    /**
+     * List all of game character in a server
+     * 
+     * @param number $uid
+     * @param Server $server
+     */
+    public function characters($uid, $server);
 }
