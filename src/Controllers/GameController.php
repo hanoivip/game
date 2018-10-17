@@ -14,6 +14,7 @@ use Hanoivip\Game\Services\ServerService;
 use Hanoivip\Game\Services\UserLogService;
 use Hanoivip\PaymentClient\BalanceUtil;
 use Hanoivip\UserBag\Services\UserBagService;
+use Illuminate\Auth\Authenticatable;
 
 class GameController extends Controller
 {
@@ -108,29 +109,21 @@ class GameController extends Controller
 	
 	/**
 	 * 
-	 * @param number $uid
+	 * @param Authenticatable $user
 	 * @param Server $selectedServer Name of selected server
 	 */
-	private function getRechargeViewData($uid, $selectedServer = null)
+	private function getRechargeViewData($user, $selectedServer = null)
 	{
+	    $uid = $user->getAuthIdentifier();
 	    $servers = $this->servers->getAll();
-	    /*$servers = [];
-	    foreach ($all as $s)
-	        $servers[$s->name] = $s->title;
-	    */    
         $packages = Recharge::all();
-        /*$packs = [];
-        foreach ($packages as $p)
-            $packs[$p->code] = $p->title;
-        */
         $recents = $this->logs->getRecentEnter($uid);
         $balanceInfo = $this->balance->getInfo($uid);
-        
         $roles = [];
         if (!empty($selectedServer))
-            $roles = $this->games->queryRoles($uid, $selectedServer);
+            $roles = $this->games->queryRoles($user, $selectedServer);
         else if ($servers->isNotEmpty())
-            $roles = $this->games->queryRoles($uid, $servers->first());
+            $roles = $this->games->queryRoles($user, $servers->first());
         //Log::debug(print_r($roles, true));
         $data = [ 'servers' => $servers, 'packs' => $packages,
             'recents' => $recents, 'balances' => $balanceInfo, 
@@ -144,15 +137,15 @@ class GameController extends Controller
 	{
 	    $svname = $request->input('svname');
 	    $selected = $this->servers->getServerByName($svname);
-	    $uid = Auth::user()->getAuthIdentifier();
+	    $user = Auth::user();
 	    if ($request->ajax())
 	    {
-	        $roles = $this->games->queryRoles($uid, $selected);
+	        $roles = $this->games->queryRoles($user, $selected);
 	        return [$svname => $roles];
 	    }
 	    else
 	    {
-	        $viewData = $this->getRechargeViewData($uid, $selected);
+	        $viewData = $this->getRechargeViewData($user, $selected);
 	        return view('hanoivip::recharge', $viewData);
 	    }
 	}
@@ -162,8 +155,7 @@ class GameController extends Controller
 	 */
 	public function recharge()
 	{
-	    $uid = Auth::user()->getAuthIdentifier();
-		$viewData = $this->getRechargeViewData($uid);
+	    $viewData = $this->getRechargeViewData(Auth::user());
 		return view('hanoivip::recharge', $viewData);
 	}
 	

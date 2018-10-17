@@ -54,8 +54,8 @@ interface IGameOperator
     /**
      * List all of game character in a server
      * 
-     * @param number $uid
+     * @param Authenticatable $user
      * @param Server $server
      */
-    public function characters($uid, $server);
+    public function characters($user, $server);
 }

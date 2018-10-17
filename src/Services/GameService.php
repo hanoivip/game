@@ -314,12 +314,12 @@ class GameService
     /**
      * Query and cached info
      * 
-     * @param number $uid
+     * @param Authenticatable $user
      * @param Server $server
      */
-    public function queryRoles($uid, $server)
+    public function queryRoles($user, $server)
     {
-        //Log::debug(print_r($server, true));
+        $uid = $user->getAuthIdentifier();
         $key = self::ROLE_CACHE_PREFIX . $uid . '_' . $server->name;
         if (Cache::has($key))
         {

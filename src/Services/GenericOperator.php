@@ -19,6 +19,9 @@ class GenericOperator implements IGameOperator
     {}
     public function sentItem($user, $server, $order, $itemId, $itemCount, $params = null)
     {}
+    public function characters($uid, $server)
+    {}
+
 
 
     
