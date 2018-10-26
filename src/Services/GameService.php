@@ -328,7 +328,7 @@ class GameService
         $roles = [];
         try 
         {
-            $roles = $this->operator->characters($uid, $server);
+            $roles = $this->operator->characters($user, $server);
         } 
         catch (Exception $e) 
         {
