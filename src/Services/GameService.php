@@ -291,12 +291,12 @@ class GameService
      */
     public function sendItem($server, $user, $itemId, $itemCount, $params = null)
     {
-        $uid = $user->getAuthIdentifier();
+        /*$uid = $user->getAuthIdentifier();
         $bag = $this->userBags->getUserBag($uid);
         if (empty($bag))
             throw new Exception("Game user bag can not be created!");
         if (!$bag->enough($itemId, $itemCount))
-            return __('bag.exchange.not-enough');
+            return __('bag.exchange.not-enough');*/
         // Send Item to game
         $order = uniqid();
         if (!$this->operator->sentItem($user, $server, $order, $itemId, $itemCount, $params))
@@ -304,8 +304,8 @@ class GameService
             Log::error("Game request item exchange fail.");
             return false;
         }
-        if (!$bag->subItem($itemId, $itemCount))
-            Log::error("Game item exchanged but can not removed from bag!");
+        //if (!$bag->subItem($itemId, $itemCount))
+        //    Log::error("Game item exchanged but can not removed from bag!");
         // Log
         event(new UserExchangeItem($user, $server, $itemId, $itemCount, $params));
         return true; 
@@ -337,5 +337,10 @@ class GameService
         if (!empty($roles))
             Cache::put($key, $roles, Carbon::now()->addMinutes(self::ROLE_CACHE_DURATION));
         return $roles;
+    }
+    
+    public function accountHasManyChars()
+    {
+        return $this->operator->supportMultiChar();
     }
 }

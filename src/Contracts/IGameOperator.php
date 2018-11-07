@@ -58,4 +58,9 @@ interface IGameOperator
      * @param Server $server
      */
     public function characters($user, $server);
+    
+    /**
+     * Does this operator support multiple of chars
+     */
+    public function supportMultiChar();
 }

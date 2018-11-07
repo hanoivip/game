@@ -1,4 +1,4 @@
-@extends('hanoivip::layouts.app')
+@extends('hanoivip::layouts.web')
 
 @section('title', 'Mua vàng trong game.')
 
