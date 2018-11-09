@@ -4,6 +4,7 @@ namespace Hanoivip\Game\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\Game\Recharge;
@@ -163,6 +164,8 @@ class GameController extends Controller
 	 * https://laravelcollective.com/docs/5.4/html
 	 * From laravel 5.0, Html Helper is not default included.
 	 * 
+	 * Enable thread-safe per user 
+	 * 
 	 * @param string $svname
 	 * @param string $package
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
@@ -175,9 +178,13 @@ class GameController extends Controller
 	    
 	    $server = $this->servers->getServerByName($svname);
 	    $user = Auth::user();
-	    
+	    $lock = "Recharging" . $user->getAuthIdentifier();
 	    try 
 	    {
+	        if (!Cache::lock($lock, 120)->get())
+	        {
+	            return view('hanoivip::recharge-result', ['error_message' => __('recharge.too-fast')]);
+	        }
     	    if ($this->games->recharge($server, $user, $package, $params))
     	    {
     	        return view('hanoivip::recharge-result', ['message' => __('recharge.success')]);
@@ -191,6 +198,10 @@ class GameController extends Controller
 	    {
 	        Log::error("Game recharge exception:" . $ex->getMessage());
 	        return view('hanoivip::recharge-result', ['error_message' => __('recharge.exception')]);
+	    }
+	    finally
+	    {
+	        Cache::lock($lock)->release();
 	    }
 	}
 	

@@ -105,6 +105,7 @@ class GameService
     }
     
     /**
+     * Non-thread-safe recharge
      * 
      * @param Server $server
      * @param Authenticatable $user
@@ -122,24 +123,16 @@ class GameService
             Log::error("Game recharge package bogus");
             return false;
         }
-        $lock = "Recharging" . $uid;
-        if (!Cache::lock($lock, 120)->get())
-        {
-            Log::error("Game other recharge is in progress..");
-            return false;
-        }
         $coin = $recharge->coin;
         $cointype = $recharge->coin_type;
         if (!$this->balance->enough($uid, $coin, $cointype))
         {
             Log::error("Game user not enough coin");
-            Cache::lock($lock)->release();
             return false;
         }
         if (empty($this->operator))
         {
             Log::error("Game operator is not set");
-            Cache::lock($lock)->release();
             throw new Exception("Chuyển xu vào game không thành công. Vui lòng liên hệ GM.");
         }
         $order = uniqid();
@@ -148,14 +141,12 @@ class GameService
             if (!$this->operator->recharge($user, $server, $order, $recharge, $params))
             {
                 Log::error("Game game operator return fail.");
-                Cache::lock($lock)->release();
                 return false;
             }
         }
         catch (Exception $ex)
         {
             Log::error("Game game operator exception. Ex:" . $ex->getMessage());
-            Cache::lock($lock)->release();
             return false;
         }
         $this->logs->logRecharge($uid, $server, $package, $order);
@@ -164,7 +155,6 @@ class GameService
         {
             Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
         }
-        Cache::lock($lock)->release();
         $event = new UserRecharge($uid, $cointype, $coin, $server->name);
         if (!empty($params))
             $event->params = $params;
@@ -335,7 +325,7 @@ class GameService
             Log::error($e->getMessage());
         }
         if (!empty($roles))
-            Cache::put($key, $roles, Carbon::now()->addMinutes(self::ROLE_CACHE_DURATION));
+            Cache::put($key, $roles, Carbon::now()->addSeconds(self::ROLE_CACHE_DURATION));
         return $roles;
     }
     
