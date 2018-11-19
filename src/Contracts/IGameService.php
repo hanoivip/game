@@ -6,7 +6,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Hanoivip\Game\Server;
 use Hanoivip\Game\Recharge;
 
-interface IGameOperator
+interface IGameService
 {
     /**
      * 
@@ -16,7 +16,6 @@ interface IGameOperator
     public function enter($user, $server);
     
     /**
-     * Recharge with pre-defined package
      * 
      * @param Authenticatable $user
      * @param Server $server

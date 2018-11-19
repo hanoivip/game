@@ -17,6 +17,10 @@ use Hanoivip\PaymentClient\BalanceUtil;
 use Hanoivip\UserBag\Services\UserBagService;
 use Illuminate\Auth\Authenticatable;
 
+use Hanoivip\Events\Game\UserRecharge;
+use Hanoivip\Events\Game\UserPlay;
+use Hanoivip\Events\Game\UserExchangeItem;
+
 class GameController extends Controller
 {
     protected $games;
@@ -91,7 +95,9 @@ class GameController extends Controller
     	    $server = $this->servers->getServerByName($svname);
     	    if (empty($server))
     	        throw new Exception("Cụm máy chủ không tồn tại.");
-    		$url = $this->games->enter($server, Auth::user());
+	        $user = Auth::user();
+    		$url = $this->games->enter($server, $user);
+    		event(new UserPlay($user->getAuthIdentifier(), $server->name));
     		if (empty($url))
     		    throw new Exception("Cụm máy chủ đang bảo trì.");
     	    if (strpos($url, 'message=') !== false)
@@ -181,18 +187,29 @@ class GameController extends Controller
 	    $lock = "Recharging" . $user->getAuthIdentifier();
 	    try 
 	    {
-	        if (!Cache::lock($lock, 120)->get())
+	        $recharge = Recharge::where('code', $package)->first();
+	        if (empty($recharge))
 	        {
-	            return view('hanoivip::recharge-result', ['error_message' => __('recharge.too-fast')]);
+	            Log::error("GameController recharge package bogus");
+	            return view('hanoivip::recharge-result', ['error_message' => __('recharge.fail')]);
 	        }
-    	    if ($this->games->recharge($server, $user, $package, $params))
-    	    {
-    	        return view('hanoivip::recharge-result', ['message' => __('recharge.success')]);
-    	    }
-    	    else 
-    	    {
-    	        return view('hanoivip::recharge-result', ['error_message' => __('recharge.fail')]);
-    	    }
+	        else
+	        {    	        
+    	        if (!Cache::lock($lock, 120)->get())
+    	        {
+    	            return view('hanoivip::recharge-result', ['error_message' => __('recharge.too-fast')]);
+    	        }
+        	    if ($this->games->recharge($server, $user, $recharge, $params))
+        	    {
+        	        event(new UserRecharge($user->getAuthIdentifier(), 
+        	            $recharge->coin_type, $recharge->coin, $server->name, $params));
+        	        return view('hanoivip::recharge-result', ['message' => __('recharge.success')]);
+        	    }
+        	    else 
+        	    {
+        	        return view('hanoivip::recharge-result', ['error_message' => __('recharge.fail')]);
+        	    }
+	        }
 	    }
 	    catch (Exception $ex)
 	    {
@@ -241,7 +258,10 @@ class GameController extends Controller
 	        if (gettype($result) == "string")
 	            $error = $result;
 	        else if ($result)
+	        {
+	            event(new UserExchangeItem($user, $server, $itemId, $count, $params));
 	            $message =  __('bag.exchange.success');
+	        }
 	        else 
 	            $error =  __('bag.exchange.fail');
 	    }

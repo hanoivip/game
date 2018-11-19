@@ -21,6 +21,9 @@ class GenericOperator implements IGameOperator
     {}
     public function characters($uid, $server)
     {}
+    public function supportMultiChar()
+    {}
+
 
 
 

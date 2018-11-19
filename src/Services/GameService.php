@@ -8,16 +8,11 @@ use Hanoivip\Game\Contracts\IGameOperator;
 use Hanoivip\Game\Contracts\ServerState;
 use Hanoivip\PaymentClient\BalanceUtil;
 use Carbon\Carbon;
-use CurlHelper;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Hanoivip\Game\Events\UserRecharge;
-use Hanoivip\Game\Events\UserPlay;
 use Hanoivip\UserBag\Services\UserBagService;
-use Hanoivip\Events\Game\UserExchangeItem;
-
 class GameService
 {
     const RANK_CACHE_DURATION = 43200;//half of day 
@@ -100,8 +95,25 @@ class GameService
             throw new Exception("Máy chủ đang bảo trì. Vui lòng thử lại sau hoặc liên hệ GM.");
         }
         $this->logs->logEnter($user->getAuthIdentifier(), $server);
-        event(new UserPlay($user->getAuthIdentifier(), $server->name));
+        //event(new UserPlay($user->getAuthIdentifier(), $server->name));
         return 'uri=' . $uri;
+    }
+    
+    /**
+     * @param Server $server
+     * @param Authenticatable $user
+     * @param number $type
+     * @param number $coin
+     * @param array $params
+     * @return boolean
+     */
+    public function rechargeWithValue($server, $user, $type, $coin, $params)
+    {
+        $fake = new Recharge();
+        $fake->code = '';
+        $fake->coin_type = $type;
+        $fake->coin = $coin;
+        return $this->recharge($server, $user, $fake, $params);
     }
     
     /**
@@ -109,22 +121,17 @@ class GameService
      * 
      * @param Server $server
      * @param Authenticatable $user
-     * @param string $package
+     * @param Recharge $recharge
      * @param array $params
      * @return boolean
      */
-    public function recharge($server, $user, $package, $params)
+    public function recharge($server, $user, $recharge, $params)
     {
         $uid = $user->getAuthIdentifier();
-        $recharge = Recharge::where('code', $package)
-                        ->first();
-        if (empty($recharge))
-        {
-            Log::error("Game recharge package bogus");
-            return false;
-        }
+        $package = $recharge->code;
         $coin = $recharge->coin;
         $cointype = $recharge->coin_type;
+        // Check enough ??
         if (!$this->balance->enough($uid, $coin, $cointype))
         {
             Log::error("Game user not enough coin");
@@ -155,10 +162,11 @@ class GameService
         {
             Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
         }
+        /*
         $event = new UserRecharge($uid, $cointype, $coin, $server->name);
         if (!empty($params))
             $event->params = $params;
-        event($event);
+        event($event);*/
         return true;
     }
     
@@ -297,7 +305,7 @@ class GameService
         //if (!$bag->subItem($itemId, $itemCount))
         //    Log::error("Game item exchanged but can not removed from bag!");
         // Log
-        event(new UserExchangeItem($user, $server, $itemId, $itemCount, $params));
+        //event(new UserExchangeItem($user, $server, $itemId, $itemCount, $params));
         return true; 
     }
     
