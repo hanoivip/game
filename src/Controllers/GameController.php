@@ -272,6 +272,28 @@ class GameController extends Controller
 	    }
 	}
 	
+	// TODO: move to some service
+	private function doBagExchange($server, $user, $itemId, $itemCount, $params)
+	{
+        $uid = $user->getAuthIdentifier();
+         $bag = $this->userBags->getUserBag($uid);
+         if (empty($bag))
+            throw new Exception("Game user bag can not be created!");
+         if (!$bag->enough($itemId, $itemCount))
+            return __('bag.exchange.not-enough');
+         // Send Item to game
+         if (!$this->games->sendItem($server, $user, $itemId, $itemCount, $params))
+         {
+             Log::error("Game request item exchange fail.");
+             return false;
+         }
+         if (!$bag->subItem($itemId, $itemCount))
+             Log::error("Game item exchanged but can not removed from bag!");
+         //Log
+         event(new UserExchangeItem($user, $server, $itemId, $itemCount, $params));
+         return true; 
+	}
+	
 	public function bagExchange(Request $request)
 	{
 	    $svname = $request->input('svname');
@@ -280,25 +302,36 @@ class GameController extends Controller
 	    $params = $request->all();
 	    $error = '';
 	    $message = '';
+	    $user = Auth::user();
+	    $lock = "Recharging" . $user->getAuthIdentifier();
 	    try
 	    {
-	        $user = Auth::user();
-	        $server = $this->servers->getServerByName($svname);
-	        $result = $this->games->sendItem($server, $user, $itemId, $count, $params);
-	        if (gettype($result) == "string")
-	            $error = $result;
-	        else if ($result)
+	        if (!Cache::lock($lock, 120)->get())
 	        {
-	            event(new UserExchangeItem($user, $server, $itemId, $count, $params));
-	            $message =  __('hanoivip::bag.exchange.success');
+	            $error =  __('hanoivip::bag.exchange.too-fast');
 	        }
-	        else 
-	            $error =  __('hanoivip::bag.exchange.fail');
+	        else
+	        {
+    	        $server = $this->servers->getServerByName($svname);
+    	        $result = $this->doBagExchange($server, $user, $itemId, $count, $params);
+    	        if (gettype($result) == "string")
+    	            $error = $result;
+    	        else if ($result)
+    	        {
+    	            $message =  __('hanoivip::bag.exchange.success');
+    	        }
+    	        else 
+    	            $error =  __('hanoivip::bag.exchange.fail');
+	        }
 	    }
 	    catch (Exception $ex)
 	    {
 	       Log::error("Game exchange user item exception. Ex:" . $ex->getMessage());
 	       $error = __('hanoivip::bag.exchange.exception');
+	    }
+	    finally
+	    {
+	        Cache::lock($lock)->release();
 	    }
 	    return view('hanoivip::bag-exchange-result', ['error' => $error, 'message' => $message]);
 	}
