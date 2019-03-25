@@ -9,7 +9,9 @@ class LibServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../config/game.php' => config_path('game.php')
+            __DIR__ . '/../config/game.php' => config_path('game.php'),
+            __DIR__.'/../views' => resource_path('views/vendor/hanoivip'),
+            __DIR__.'/../lang' => resource_path('lang/vendor/hanoivip'),
         ]);
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->loadViewsFrom(__DIR__ . '/../views', 'hanoivip');
@@ -21,5 +23,6 @@ class LibServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind('GameService', \Hanoivip\Game\Services\GameService::class);
+        $this->mergeConfigFrom(__DIR__.'/../config/game.php', 'game');
     }
 }
