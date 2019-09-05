@@ -6,9 +6,8 @@
 		"php" : ">=7.0.0",
 		"fideloper/proxy" : "~4.0",
 		"guzzlehttp/guzzle" : "^6.3",
-		"laravel/framework" : "5.5.*",
+		"laravel/framework" : ">=5.5",
 		"laravel/tinker" : "~1.0",
-		"laravelcollective/html" : "^5.4.0",
 		"mervick/curl-helper" : "^1.1",
 		"hanoivip/payment-client": "dev-master",
 		"hanoivip/user-bag": "dev-master"
