@@ -184,7 +184,8 @@ class GameController extends Controller
 	    
 	    $server = $this->servers->getServerByName($svname);
 	    $user = Auth::user();
-	    $lock = "Recharging" . $user->getAuthIdentifier();
+	    $lockKey = "Recharging" . $user->getAuthIdentifier();
+	    $lock = Cache::lock($lockKey);
 	    try 
 	    {
 	        $recharge = Recharge::where('code', $package)->first();
@@ -195,11 +196,13 @@ class GameController extends Controller
 	        }
 	        else
 	        {    	        
-    	        if (!Cache::lock($lock, 120)->get())
+    	        if (!$lock->get())
     	        {
     	            return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.too-fast')]);
     	        }
-        	    if ($this->games->recharge($server, $user, $recharge, $params))
+        	    $result = $this->games->recharge($server, $user, $recharge, $params);
+        	    $lock->release();
+        	    if ($result)
         	    {
         	        event(new UserRecharge($user->getAuthIdentifier(), 
         	            $recharge->coin_type, $recharge->coin, $server->name, $params));
@@ -215,10 +218,6 @@ class GameController extends Controller
 	    {
 	        Log::error("Game recharge exception:" . $ex->getMessage());
 	        return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.exception')]);
-	    }
-	    finally
-	    {
-	        Cache::lock($lock)->release();
 	    }
 	}
 	
