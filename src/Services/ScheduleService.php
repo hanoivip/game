@@ -7,6 +7,10 @@ use Carbon\Carbon;
 
 class ScheduleService
 {
+    /**
+     * 
+     * @return ServerSchedule[]
+     */
     public function getAll()
     {
         $schedules = ServerSchedule::where('action_time', '>', Carbon::now())

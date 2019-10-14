@@ -2,7 +2,7 @@
 
 namespace Hanoivip\Game\Controllers;
 
-use Hanoivip\Game\Services\GameService;
+use Hanoivip\Game\Contracts\IGameService;
 use Hanoivip\Game\Services\ServerService;
 use Hanoivip\Game\Services\UserLogService;
 use Hanoivip\Game\Services\ScheduleService;
@@ -22,7 +22,7 @@ class DirectGameController extends Controller
      *
      * @return void
      */
-    public function __construct(GameService $games, 
+    public function __construct(IGameService $games, 
         ServerService $servers, UserLogService $logs,
         ScheduleService $schedule)
     {

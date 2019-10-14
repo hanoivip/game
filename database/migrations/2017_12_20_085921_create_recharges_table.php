@@ -6,11 +6,6 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateRechargesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('recharges', function (Blueprint $table) {
@@ -24,11 +19,6 @@ class CreateRechargesTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('recharges');

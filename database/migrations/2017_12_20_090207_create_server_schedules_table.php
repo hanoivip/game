@@ -6,11 +6,6 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateServerSchedulesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('server_schedules', function (Blueprint $table) {
@@ -25,11 +20,6 @@ class CreateServerSchedulesTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('server_schedules');
