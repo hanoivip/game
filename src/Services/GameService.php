@@ -317,24 +317,24 @@ class GameService
      */
     public function queryRoles($user, $server)
     {
-        $uid = $user->getAuthIdentifier();
-        $key = self::ROLE_CACHE_PREFIX . $uid . '_' . $server->name;
-        if (Cache::has($key))
-        {
-            return Cache::get($key);
-        }
-        $roles = [];
         try 
         {
+            $uid = $user->getAuthIdentifier();
+            $key = self::ROLE_CACHE_PREFIX . $uid . '_' . $server->name;
+            if (Cache::has($key))
+            {
+                return Cache::get($key);
+            }
             $roles = $this->operator->characters($user, $server);
+            if (!empty($roles))
+                Cache::put($key, $roles, Carbon::now()->addSeconds(self::ROLE_CACHE_DURATION));
+            return $roles;
         } 
         catch (Exception $e) 
         {
             Log::error($e->getMessage());
         }
-        if (!empty($roles))
-            Cache::put($key, $roles, Carbon::now()->addSeconds(self::ROLE_CACHE_DURATION));
-        return $roles;
+        return [];
     }
     
     public function accountHasManyChars()

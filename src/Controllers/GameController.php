@@ -71,7 +71,7 @@ class GameController extends Controller
 	/**
 	 * Hiển thị danh sách server của game tương ứng.
 	 */
-	public function serverlist()
+	public function serverlist(Request $request)
 	{
 	    $params = [];
 		$params['servers'] = $this->servers->getAll();
@@ -81,7 +81,10 @@ class GameController extends Controller
 		{
 		    $params['recents'] = $this->logs->getRecentEnter(Auth::user()->getAuthIdentifier());
 		}
-		return view('hanoivip::serverlist', $params);
+		if ($request->ajax())
+		    return $params;
+		else
+		    return view('hanoivip::serverlist', $params);
 	}
 	
 	/**
@@ -148,7 +151,7 @@ class GameController extends Controller
 	    if ($request->ajax())
 	    {
 	        $roles = $this->games->queryRoles($user, $selected);
-	        return [$svname => $roles];
+	        return ['roles' => $roles];
 	    }
 	    else
 	    {
