@@ -12,6 +12,8 @@ class LibServiceProvider extends ServiceProvider
             __DIR__ . '/../config/game.php' => config_path('game.php'),
             __DIR__.'/../views' => resource_path('views/vendor/hanoivip'),
             __DIR__.'/../lang' => resource_path('lang/vendor/hanoivip'),
+            __DIR__.'/../resources/assets' => resource_path('assets/vendor/hanoivip'),
+            __DIR__.'/../resources/images' => public_path('images'),
         ]);
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->loadViewsFrom(__DIR__ . '/../views', 'hanoivip');
