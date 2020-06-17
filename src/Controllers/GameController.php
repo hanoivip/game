@@ -194,14 +194,24 @@ class GameController extends Controller
 	        $recharge = Recharge::where('code', $package)->first();
 	        if (empty($recharge))
 	        {
-	            Log::error("GameController recharge package bogus");
-	            return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.fail')]);
+	            Log::error("GameController recharge package not exist");
+	            if ($request->expectsJson())
+	            {
+	                return ['error' => 1, 'message' => __('hanoivip::recharge.fail')];    
+	            }
+	            else
+	            {
+	               return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.fail')]);
+	            }
 	        }
 	        else
 	        {    	        
     	        if (!$lock->get())
     	        {
-    	            return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.too-fast')]);
+    	            if ($request->expectsJson())
+    	                return ['error' => 1, 'message' => __('hanoivip::recharge.too-fast')]; 
+    	            else
+    	               return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.too-fast')]);
     	        }
         	    $result = $this->games->recharge($server, $user, $recharge, $params);
         	    $lock->release();
@@ -209,18 +219,35 @@ class GameController extends Controller
         	    {
         	        event(new UserRecharge($user->getAuthIdentifier(), 
         	            $recharge->coin_type, $recharge->coin, $server->name, $params));
-        	        return view('hanoivip::recharge-result', ['message' => __('hanoivip::recharge.success')]);
+        	        if ($request->expectsJson())
+        	            return ['error' => 0, 'message' => __('hanoivip::recharge.success')]; 
+        	        else
+        	           return view('hanoivip::recharge-result', ['message' => __('hanoivip::recharge.success')]);
         	    }
         	    else 
         	    {
-        	        return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.fail')]);
+        	        if ($request->expectsJson())
+        	        {
+        	            return ['error' => 1, 'message' => __('hanoivip::recharge.fail')];
+        	        }
+        	        else
+        	        {
+        	            return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.fail')]);
+        	        }
         	    }
 	        }
 	    }
 	    catch (Exception $ex)
 	    {
 	        Log::error("Game recharge exception:" . $ex->getMessage());
-	        return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.exception')]);
+	        if ($request->expectsJson())
+	        {
+	            return ['error' => 1, 'message' => __('hanoivip::recharge.exception')];
+	        }
+	        else
+	        {
+	            return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.exception')]);
+	        }
 	    }
 	}
 	

@@ -8,4 +8,5 @@ Route::middleware(['auth:api'])->namespace('Hanoivip\Game\Controllers')->prefix(
     Route::post('/choose-role', 'WizardController@continue');
     // done, let move on
     Route::post('/wizard/role', 'WizardController@continue')->name('wizard.role.next');
+    Route::any('/game/recharge', 'GameController@doRecharge');
 });
