@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['token'])->namespace('Hanoivip\Game\Controllers')->prefix('api')->group(function () {
+Route::middleware(['auth:api'])->namespace('Hanoivip\Game\Controllers')->prefix('api')->group(function () {
     Route::any('/server/list', 'GameController@serverlist');
     Route::any('/user/role', 'GameController@queryRoles');
     Route::post('/choose-role', 'WizardController@continue');
