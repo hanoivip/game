@@ -97,6 +97,7 @@ export default class RoleWizard extends Component {
 				return (
 			  			<div className="my-role-wizard">
 				  			<form action='/api/wizard/role' method="post">
+				  				<input type="hidden" id="access_token" name="access_token" value={API_TOKEN} />
 				  				<input type="hidden" id="next" name="next" value={nextUrl} />
 				  				<select id="svname" name="svname" onChange={(e) => this.onSelectServer(e)} value={selectedSv}>
 				  					<option value="">Select Server</option>
