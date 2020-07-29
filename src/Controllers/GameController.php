@@ -74,7 +74,7 @@ class GameController extends Controller
 	public function serverlist(Request $request)
 	{
 	    $params = [];
-		$params['servers'] = $this->servers->getAll();
+		$params['servers'] = $this->servers->getUserServer();
 		$params['schedules'] = $this->schedule->getAll();
 		$params['ranks'] = $this->games->rank();
 		if (Auth::check())
@@ -125,7 +125,8 @@ class GameController extends Controller
 	private function getRechargeViewData($user, $selectedServer = null)
 	{
 	    $uid = $user->getAuthIdentifier();
-	    $servers = $this->servers->getAll();
+	    //$servers = $this->servers->getAll();
+	    $servers = $this->servers->getUserServer();
         $packages = Recharge::all();
         $recents = $this->logs->getRecentEnter($uid);
         $balanceInfo = $this->balance->getInfo($uid);

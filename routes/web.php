@@ -11,9 +11,9 @@ Route::middleware('web', 'auth:web')->namespace('Hanoivip\Game\Controllers')->gr
     Route::post('/recharge/result', 'GameController@doRecharge')->name('doRecharge');
     Route::get('/recharge/role', 'GameController@queryRoles')->name('recharge.role');
 
-    Route::get('/bag', 'GameController@bagList')->name('bag');
-    Route::post('/bag/exchange', 'GameController@bagExchange')->name('bag.exchage');
-    Route::get('/bag/role', 'GameController@bagRoles')->name('bag.role');
+    //Route::get('/bag', 'GameController@bagList')->name('bag');
+    //Route::post('/bag/exchange', 'GameController@bagExchange')->name('bag.exchage');
+    //Route::get('/bag/role', 'GameController@bagRoles')->name('bag.role');
     
     Route::get('/wizard/role', 'WizardController@chooseRole')->name('wizard.role');
 });

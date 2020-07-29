@@ -18,18 +18,29 @@ class ServerService
      */
     public function getRecommendServer()
     {
-        //$server = Server::where('is_recommend', true)
-        $server = DB::table('servers')
-                        ->orderBy('id', 'desc')
-                        ->first();
+        $server = Server::where('is_recommend', true)
+        ->orderBy('id', 'desc')
+        ->first();
         return $server;
+    }
+    /**
+     * Lấy danh sách máy chủ dành cho người dùng
+     * - Máy chủ hoạt động
+     * - Máy chủ hiển thị
+     * 
+     * @return \Illuminate\Support\Collection
+     */
+    public function getUserServer()
+    {
+        $servers = Server::where('is_show', true)
+        ->orderBy('id', 'desc')
+        ->get();
+        return $servers;
     }
     
     public function getAll()
     {
-        $servers = DB::table('servers')
-                        ->orderBy('id', 'desc')
-                        ->get();
+        $servers = Server::orderBy('id', 'desc')->get();
         return $servers;
     }
     
