@@ -13,13 +13,11 @@ use Hanoivip\Game\Services\GameService;
 use Hanoivip\Game\Services\ScheduleService;
 use Hanoivip\Game\Services\ServerService;
 use Hanoivip\Game\Services\UserLogService;
-use Hanoivip\PaymentClient\BalanceUtil;
-use Hanoivip\UserBag\Services\UserBagService;
 use Illuminate\Auth\Authenticatable;
 
 use Hanoivip\Events\Game\UserRecharge;
 use Hanoivip\Events\Game\UserPlay;
-use Hanoivip\Events\Game\UserExchangeItem;
+use Hanoivip\GateClient\Facades\BalanceFacade;
 
 class GameController extends Controller
 {
@@ -30,10 +28,6 @@ class GameController extends Controller
     protected $schedule;
     
     protected $logs;
-    
-    protected $balance;
-    
-    protected $userBags;
 
     
     /**
@@ -45,16 +39,12 @@ class GameController extends Controller
         GameService $games, 
         ServerService $servers, 
         ScheduleService $schedule,
-        UserLogService $logs, 
-        BalanceUtil $balance, 
-        UserBagService $userBags)
+        UserLogService $logs)
     {
         $this->games = $games;
         $this->servers = $servers;
         $this->schedule = $schedule;
         $this->logs = $logs;
-        $this->balance = $balance;
-        $this->userBags = $userBags;
     }
 
     /**
@@ -129,7 +119,7 @@ class GameController extends Controller
 	    $servers = $this->servers->getUserServer();
         $packages = Recharge::all();
         $recents = $this->logs->getRecentEnter($uid);
-        $balanceInfo = $this->balance->getInfo($uid);
+        $balanceInfo = BalanceFacade::getInfo($uid);
         $roles = [];
         if (!empty($selectedServer))
             $roles = $this->games->queryRoles($user, $selectedServer);
@@ -266,7 +256,7 @@ class GameController extends Controller
 	        return view('hanoivip::bag', ['error' => __('hanoivip::bag.list.exception')]);
 	    }
 	}
-	
+	/*
 	private function getBagViewData($user, $selectedServer = null)
 	{
 	    $bag = $this->userBags->getUserBag($user->getAuthIdentifier());
@@ -365,4 +355,5 @@ class GameController extends Controller
 	    }
 	    return view('hanoivip::bag-exchange-result', ['error' => $error, 'message' => $message]);
 	}
+	*/
 }

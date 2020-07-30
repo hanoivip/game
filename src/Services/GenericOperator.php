@@ -23,9 +23,6 @@ class GenericOperator implements IGameOperator
     {}
     public function supportMultiChar()
     {}
-
-
-
-
-    
+    public function order($user, $server, $package, $params = null)
+    {}
 }

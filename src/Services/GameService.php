@@ -6,13 +6,12 @@ use Hanoivip\Game\Recharge;
 use Hanoivip\Game\Server;
 use Hanoivip\Game\Contracts\IGameOperator;
 use Hanoivip\Game\Contracts\ServerState;
-use Hanoivip\PaymentClient\BalanceUtil;
+use Hanoivip\GateClient\Facades\BalanceFacade;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Hanoivip\UserBag\Services\UserBagService;
 class GameService
 {
     const RANK_CACHE_DURATION = 43200;//half of day 
@@ -32,24 +31,18 @@ class GameService
     
     protected $logs;
     
-    protected $balance;
-    
     protected $operator;
     
     protected $userBags;
     
     public function __construct(
         ServerService $servers, 
-        UserLogService $logs, 
-        BalanceUtil $balance, 
-        IGameOperator $operator,
-        UserBagService $userBags)
+        UserLogService $logs,
+        IGameOperator $operator)
     {
         $this->servers = $servers;
         $this->logs = $logs;
-        $this->balance = $balance;
         $this->operator = $operator;
-        $this->userBags = $userBags;
     }
     
     /**
@@ -132,7 +125,7 @@ class GameService
         $coin = $recharge->coin;
         $cointype = $recharge->coin_type;
         // Check enough ??
-        if (!$this->balance->enough($uid, $coin, $cointype))
+        if (!BalanceFacade::enough($uid, $coin, $cointype))
         {
             Log::error("Game user not enough coin");
             return false;
@@ -158,7 +151,7 @@ class GameService
         }
         $this->logs->logRecharge($uid, $server, $package, $order);
         $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
-        if (!$this->balance->remove($uid, $coin, $reason, $cointype))
+        if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
         {
             Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
         }
