@@ -213,7 +213,7 @@ class GameController extends Controller
         	        if ($request->expectsJson())
         	            return ['error' => 0, 'message' => __('hanoivip::recharge.success')]; 
         	        else
-        	           return view('hanoivip::recharge-result', ['message' => __('hanoivip::recharge.success')]);
+        	           return response()->redirectToRoute('recharge.success');
         	    }
         	    else 
         	    {
@@ -223,7 +223,7 @@ class GameController extends Controller
         	        }
         	        else
         	        {
-        	            return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.fail')]);
+        	            return response()->redirectToRoute('recharge.fail', ['error_message' => __('hanoivip::recharge.fail')]);
         	        }
         	    }
 	        }
@@ -237,123 +237,21 @@ class GameController extends Controller
 	        }
 	        else
 	        {
-	            return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.exception')]);
+	            return response()->redirectToRoute('recharge.fail', ['error_message' => __('hanoivip::recharge.exception')]);
 	        }
 	    }
 	}
 	
-	public function bagList()
+	public function onRechargeSuccess(Request $request)
 	{
-	    $user = Auth::user();
-	    try 
-	    {
-	        $data = $this->getBagViewData($user);
-	        return view('hanoivip::bag', $data);
-	    }
-	    catch (Exception $ex)
-	    {
-	        Log::error("Game list user bag item ex:" . $ex->getMessage());
-	        return view('hanoivip::bag', ['error' => __('hanoivip::bag.list.exception')]);
-	    }
-	}
-	/*
-	private function getBagViewData($user, $selectedServer = null)
-	{
-	    $bag = $this->userBags->getUserBag($user->getAuthIdentifier());
-	    $items = $bag->list();
-	    if (gettype($items) == "object")
-	        $items = [ $items ];
-	    $servers = $this->servers->getAll();
-	    $roles = [];
-	    if (!empty($selectedServer))
-	        $roles = $this->games->queryRoles($user, $selectedServer);
-        else if ($servers->isNotEmpty())
-            $roles = $this->games->queryRoles($user, $servers->first());
-        $data = ['items' => $items, 'servers' => $servers, 'roles' => $roles];
-        if (!empty($selectedServer))
-            $data['selected'] = $selectedServer->name;
-        return $data;
+	    return view('hanoivip::recharge-result-sucess');
 	}
 	
-	public function bagRoles(Request $request)
+	public function onRechargeFail(Request $request)
 	{
-	    $svname = $request->input('svname');
-	    $selected = $this->servers->getServerByName($svname);
-	    $user = Auth::user();
-	    if ($request->ajax())
-	    {
-	        $roles = $this->games->queryRoles($user, $selected);
-	        return [$svname => $roles];
-	    }
-	    else
-	    {
-	        $viewData = $this->getBagViewData($user, $selected);
-	        return view('hanoivip::bag', $viewData);
-	    }
+	    $message = __('hanoivip::recharge.fail');
+	    if ($request->has('error_message'))
+	        $message = $request->input('error_message');
+	    return view('hanoivip::recharge-result-fail', ['error_message' => $message]);
 	}
-	
-	// TODO: move to some service
-	private function doBagExchange($server, $user, $itemId, $itemCount, $params)
-	{
-        $uid = $user->getAuthIdentifier();
-         $bag = $this->userBags->getUserBag($uid);
-         if (empty($bag))
-            throw new Exception("Game user bag can not be created!");
-         if (!$bag->enough($itemId, $itemCount))
-            return __('bag.exchange.not-enough');
-         // Send Item to game
-         if (!$this->games->sendItem($server, $user, $itemId, $itemCount, $params))
-         {
-             Log::error("Game request item exchange fail.");
-             return false;
-         }
-         if (!$bag->subItem($itemId, $itemCount))
-             Log::error("Game item exchanged but can not removed from bag!");
-         //Log
-         event(new UserExchangeItem($user, $server, $itemId, $itemCount, $params));
-         return true; 
-	}
-	
-	public function bagExchange(Request $request)
-	{
-	    $svname = $request->input('svname');
-	    $itemId = $request->input('itemId');
-	    $count = $request->input('count');
-	    $params = $request->all();
-	    $error = '';
-	    $message = '';
-	    $user = Auth::user();
-	    $lock = "Recharging" . $user->getAuthIdentifier();
-	    try
-	    {
-	        if (!Cache::lock($lock, 120)->get())
-	        {
-	            $error =  __('hanoivip::bag.exchange.too-fast');
-	        }
-	        else
-	        {
-    	        $server = $this->servers->getServerByName($svname);
-    	        $result = $this->doBagExchange($server, $user, $itemId, $count, $params);
-    	        if (gettype($result) == "string")
-    	            $error = $result;
-    	        else if ($result)
-    	        {
-    	            $message =  __('hanoivip::bag.exchange.success');
-    	        }
-    	        else 
-    	            $error =  __('hanoivip::bag.exchange.fail');
-	        }
-	    }
-	    catch (Exception $ex)
-	    {
-	       Log::error("Game exchange user item exception. Ex:" . $ex->getMessage());
-	       $error = __('hanoivip::bag.exchange.exception');
-	    }
-	    finally
-	    {
-	        Cache::lock($lock)->release();
-	    }
-	    return view('hanoivip::bag-exchange-result', ['error' => $error, 'message' => $message]);
-	}
-	*/
 }
