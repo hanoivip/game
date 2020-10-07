@@ -17,14 +17,14 @@ class UserLogService
         $log->save();
     }
 
-    public function logRecharge($uid, $server, $package, $order)
+    public function logRecharge($uid, $server, $package, $order, $rid = 0)
     {
         $log = new UserLog();
         $log->user_id = $uid;
         $log->server_name = $server->name;
         $log->server_title = $server->title;
         $log->action = "recharge";
-        $log->action_params = json_encode(['package' => $package, 'order' => $order]);
+        $log->action_params = json_encode(['package' => $package, 'order' => $order, 'receiver' => $rid]);
         $log->save();
     }
     

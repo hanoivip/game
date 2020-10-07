@@ -2,16 +2,15 @@
 
 namespace Hanoivip\Game\Services;
 
-use Hanoivip\Game\Server;
+use Hanoivip\GameContracts\ViewOjects\ServerVO;
 use Hanoivip\GameContracts\ViewOjects\UserVO;
-use Hanoivip\GameContracts\Contracts\IGameOperator;
 
 class GameHelper
 {
     private $game;
     
     public function __construct(
-        IGameOperator $game)
+        GameService $game)
     {
         $this->game = $game;
     }
@@ -23,9 +22,40 @@ class GameHelper
      * @param number $count
      * @param string $role Player Role ID
      */
-    public function sendItem($userId, $server, $item, $count, $role)
+    public function sendItem($userId, $server, $item, $count, $role, $receiverId = 0)
     {
-        $serverRec = Server::where('name', $server)->first();
-        return $this->game->sentItem(new UserVO($userId, ""), $serverRec, uniqid(), $item, $count, ['roleid' => $role]);
+        if (empty($receiverId))
+            return $this->game->sendItem($server, new UserVO($userId, ""), $item, $count, ['roleid' => $role]);
+        else 
+            return $this->game->sendItem($server, new UserVO($userId, ""), $item, $count, ['roleid' => $role], new UserVO($receiverId, ""));
+    }
+    /**
+     * 
+     * @param number $userId
+     * @param string $server Server Name
+     * @param string $package Recharge package code
+     * @param string $role Role id
+     * @param number $receiverId
+     */
+    public function recharge($userId, $server, $package, $role, $receiverId = 0)
+    {
+        if (empty($receiverId))
+            return $this->game->recharge($server, new UserVO($userId, ""), $package, ['roleid' => $role]);
+        else
+            return $this->game->recharge($server, new UserVO($userId, ""), $package, ['roleid' => $role], new UserVO($receiverId, ""));
+    }
+    
+    public function getRechargePackages()
+    {
+        return $this->game->getRechargePackages();
+    }
+    /**
+     * 
+     * @param string|ServerVO $server
+     * @param number $userId
+     */
+    public function getRoles($server, $userId)
+    {
+        return $this->game->queryRoles(new UserVO($userId, ""), $server);
     }
 }

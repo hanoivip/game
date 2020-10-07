@@ -2,11 +2,17 @@
 
 namespace Hanoivip\Game\Services;
 
-use Hanoivip\Game\Contracts\IGameOperator;
+use Hanoivip\GameContracts\Contracts\IGameOperator;
 
 class GenericOperator implements IGameOperator
 {
+    public function characters($user, $server)
+    {}
+
     public function recharge($user, $server, $order, $package, $params = null)
+    {}
+
+    public function supportMultiChar()
     {}
 
     public function online($server)
@@ -17,12 +23,12 @@ class GenericOperator implements IGameOperator
 
     public function enter($user, $server)
     {}
+
     public function sentItem($user, $server, $order, $itemId, $itemCount, $params = null)
     {}
-    public function characters($uid, $server)
-    {}
-    public function supportMultiChar()
-    {}
+
     public function order($user, $server, $package, $params = null)
     {}
+
+    
 }

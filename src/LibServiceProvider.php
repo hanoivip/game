@@ -24,7 +24,7 @@ class LibServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $this->app->bind('GameService', \Hanoivip\Game\Services\GameService::class);
+        //$this->app->bind('GameService', \Hanoivip\Game\Services\GameService::class);
         $this->app->bind('GameHelper', \Hanoivip\Game\Services\GameHelper::class);
         $this->app->bind('ServerService', \Hanoivip\Game\Services\ServerService::class);
         $this->mergeConfigFrom(__DIR__.'/../config/game.php', 'game');

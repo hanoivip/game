@@ -14,9 +14,6 @@ use Hanoivip\Game\Services\ScheduleService;
 use Hanoivip\Game\Services\ServerService;
 use Hanoivip\Game\Services\UserLogService;
 use Illuminate\Auth\Authenticatable;
-
-use Hanoivip\Events\Game\UserRecharge;
-use Hanoivip\Events\Game\UserPlay;
 use Hanoivip\GateClient\Facades\BalanceFacade;
 
 class GameController extends Controller
@@ -90,7 +87,6 @@ class GameController extends Controller
     	        throw new Exception("Cụm máy chủ không tồn tại.");
 	        $user = Auth::user();
     		$url = $this->games->enter($server, $user);
-    		event(new UserPlay($user->getAuthIdentifier(), $server->name));
     		if (empty($url))
     		    throw new Exception("Cụm máy chủ đang bảo trì.");
     	    if (strpos($url, 'message=') !== false)
@@ -110,14 +106,14 @@ class GameController extends Controller
 	/**
 	 * 
 	 * @param Authenticatable $user
-	 * @param Server $selectedServer Name of selected server
+	 * @param string $selectedServer Name of selected server
 	 */
 	private function getRechargeViewData($user, $selectedServer = null)
 	{
 	    $uid = $user->getAuthIdentifier();
 	    //$servers = $this->servers->getAll();
 	    $servers = $this->servers->getUserServer();
-        $packages = Recharge::all();
+        $packages = $this->games->getRechargePackages();
         $recents = $this->logs->getRecentEnter($uid);
         $balanceInfo = BalanceFacade::getInfo($uid);
         $roles = [];
@@ -130,23 +126,22 @@ class GameController extends Controller
             'recents' => $recents, 'balances' => $balanceInfo, 
             'roles' => $roles];
         if (!empty($selectedServer))
-            $data['selected'] = $selectedServer->name;
+            $data['selected'] = $selectedServer;
         return $data;
 	}
 	
 	public function queryRoles(Request $request)
 	{
 	    $svname = $request->input('svname');
-	    $selected = $this->servers->getServerByName($svname);
 	    $user = Auth::user();
 	    if ($request->ajax())
 	    {
-	        $roles = $this->games->queryRoles($user, $selected);
+	        $roles = $this->games->queryRoles($user, $svname);
 	        return ['roles' => $roles];
 	    }
 	    else
 	    {
-	        $viewData = $this->getRechargeViewData($user, $selected);
+	        $viewData = $this->getRechargeViewData($user, $svname);
 	        return view('hanoivip::recharge', $viewData);
 	    }
 	}
@@ -166,6 +161,10 @@ class GameController extends Controller
 	 * 
 	 * Enable thread-safe per user 
 	 * 
+	 * TODO: 
+	 * + request validation
+	 * + request throttle
+	 * 
 	 * @param string $svname
 	 * @param string $package
 	 * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
@@ -176,11 +175,68 @@ class GameController extends Controller
 	    $svname = $request->input('svname');
 	    $package = $request->input('package');
 	    
-	    $server = $this->servers->getServerByName($svname);
 	    $user = Auth::user();
 	    $lockKey = "Recharging" . $user->getAuthIdentifier();
 	    $lock = Cache::lock($lockKey);
 	    try 
+	    { 	        
+	        if (!$lock->get())
+	        {
+	            if ($request->expectsJson())
+	                return ['error' => 1, 'message' => __('hanoivip::recharge.too-fast')]; 
+	            else
+	               return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.too-fast')]);
+	        }
+	        $result = $this->games->recharge($svname, $user, $package, $params);
+    	    $lock->release();
+    	    if ($result === true)
+    	    {
+    	        if ($request->expectsJson())
+    	        {
+    	            return ['error' => 0, 'message' => __('hanoivip::recharge.success')]; 
+    	        }
+    	        else
+    	        {
+    	           return response()->redirectToRoute('recharge.success');
+    	        }
+    	    }
+    	    else 
+    	    {
+    	        if ($request->expectsJson())
+    	        {
+    	            return ['error' => 1, 'message' => $result ];
+    	        }
+    	        else
+    	        {
+    	            return response()->redirectToRoute('recharge.fail', ['error_message' => $result ]);
+    	        }
+    	    }
+	    }
+	    catch (Exception $ex)
+	    {
+	        Log::error("Game recharge exception:" . $ex->getMessage());
+	        if ($request->expectsJson())
+	        {
+	            return ['error' => 1, 'message' => __('hanoivip::recharge.exception')];
+	        }
+	        else
+	        {
+	            return response()->redirectToRoute('recharge.fail', ['error_message' => __('hanoivip::recharge.exception')]);
+	        }
+	    }
+	}
+	
+	public function doRecharge1(Request $request)
+	{
+	    $params = $request->all();
+	    $svname = $request->input('svname');
+	    $package = $request->input('package');
+	    
+	    $server = $this->servers->getServerByName($svname);
+	    $user = Auth::user();
+	    $lockKey = "Recharging" . $user->getAuthIdentifier();
+	    $lock = Cache::lock($lockKey);
+	    try
 	    {
 	        $recharge = Recharge::where('code', $package)->first();
 	        if (empty($recharge))
@@ -188,44 +244,46 @@ class GameController extends Controller
 	            Log::error("GameController recharge package not exist");
 	            if ($request->expectsJson())
 	            {
-	                return ['error' => 1, 'message' => __('hanoivip::recharge.fail')];    
+	                return ['error' => 1, 'message' => __('hanoivip::recharge.fail')];
 	            }
 	            else
 	            {
-	               return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.fail')]);
+	                return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.fail')]);
 	            }
 	        }
 	        else
-	        {    	        
-    	        if (!$lock->get())
-    	        {
-    	            if ($request->expectsJson())
-    	                return ['error' => 1, 'message' => __('hanoivip::recharge.too-fast')]; 
-    	            else
-    	               return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.too-fast')]);
-    	        }
-        	    $result = $this->games->recharge($server, $user, $recharge, $params);
-        	    $lock->release();
-        	    if ($result)
-        	    {
-        	        event(new UserRecharge($user->getAuthIdentifier(), 
-        	            $recharge->coin_type, $recharge->coin, $server->name, $params));
-        	        if ($request->expectsJson())
-        	            return ['error' => 0, 'message' => __('hanoivip::recharge.success')]; 
-        	        else
-        	           return response()->redirectToRoute('recharge.success');
-        	    }
-        	    else 
-        	    {
-        	        if ($request->expectsJson())
-        	        {
-        	            return ['error' => 1, 'message' => __('hanoivip::recharge.fail')];
-        	        }
-        	        else
-        	        {
-        	            return response()->redirectToRoute('recharge.fail', ['error_message' => __('hanoivip::recharge.fail')]);
-        	        }
-        	    }
+	        {
+	            if (!$lock->get())
+	            {
+	                if ($request->expectsJson())
+	                    return ['error' => 1, 'message' => __('hanoivip::recharge.too-fast')];
+	                    else
+	                        return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.too-fast')]);
+	            }
+	            $result = $this->games->recharge($server, $user, $recharge, $params);
+	            $lock->release();
+	            if ($result === true)
+	            {
+	                if ($request->expectsJson())
+	                {
+	                    return ['error' => 0, 'message' => __('hanoivip::recharge.success')];
+	                }
+	                else
+	                {
+	                    return response()->redirectToRoute('recharge.success');
+	                }
+	            }
+	            else
+	            {
+	                if ($request->expectsJson())
+	                {
+	                    return ['error' => 1, 'message' => $result ];
+	                }
+	                else
+	                {
+	                    return response()->redirectToRoute('recharge.fail', ['error_message' => $result ]);
+	                }
+	            }
 	        }
 	    }
 	    catch (Exception $ex)

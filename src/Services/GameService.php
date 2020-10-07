@@ -4,13 +4,14 @@ namespace Hanoivip\Game\Services;
 
 use Hanoivip\Game\Recharge;
 use Hanoivip\Game\Server;
+use Hanoivip\GameContracts\ViewOjects\RechargeVO;
+use Hanoivip\GameContracts\ViewOjects\ServerVO;
 use Hanoivip\GameContracts\ViewOjects\UserVO;
 use Hanoivip\GameContracts\Contracts\IGameOperator;
 use Hanoivip\GameContracts\Contracts\ServerState;
 use Hanoivip\GateClient\Facades\BalanceFacade;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Hanoivip\Events\Game\UserRecharge;
@@ -49,15 +50,6 @@ class GameService
         $this->operator = $operator;
     }
     /**
-     * 
-     * @param Authenticatable $user
-     * @return UserVO
-     */
-    private function getGameUser($user)
-    {
-        return new UserVO($user->getAuthIdentifier(), $user->getAuthIdentifierName());
-    }
-    /**
      * Protocol defined:
      * http://game.login.uri/login.php?user=$uid&svname=$svname&key=$loginkey
      * 
@@ -65,8 +57,8 @@ class GameService
      * + code = 0: success.
      * + iframe
      * 
-     * @param Server $server
-     * @param Authenticatable $user
+     * @param ServerVO $server
+     * @param UserVO $user
      * @throws Exception
      * @return string Game url
      */
@@ -87,13 +79,8 @@ class GameService
                 return 'message=Game server is full';
             }
         }
-        if (empty($this->operator))
-        {
-            Log::error("Game operator is not set");
-            throw new Exception("Máy chủ đang bảo trì. Vui lòng thử lại sau hoặc liên hệ GM.");
-        }
         //TODO: make EnterResponse here;
-        $uri = $this->operator->enter($this->getGameUser($user), $server);
+        $uri = $this->operator->enter($user, $server);
         if (empty($uri))
         {
             Log::error("Game enter uri is empty");
@@ -103,17 +90,68 @@ class GameService
         event(new UserPlay($user->getAuthIdentifier(), $server->name));
         return 'uri=' . $uri;
     }
+    /**
+     * Non-thread-safe recharge
+     * 
+     * @param string $server Server name
+     * @param UserVO $user
+     * @param string $recharge Recharge package code
+     * @param array $params
+     * @param UserVO $receiver
+     */
+    public function recharge($serverName, $user, $rechargeCode, $params, $receiver = null)
+    {
+        $server = $this->servers->getServerByName($serverName);
+        $recharge = Recharge::where('code', $rechargeCode)->first();
+        // Process
+        $uid = $user->getAuthIdentifier();
+        $package = $recharge->code;
+        $coin = $recharge->coin;
+        $cointype = $recharge->coin_type;
+        // Check enough
+        if (!BalanceFacade::enough($uid, $coin, $cointype))
+        {
+            Log::error("Game user not enough coin");
+            return __('hanoivip::game.recharge-fail.not-enough-coin');
+        }
+        $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
+        if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
+        {
+            Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
+            return __('hanoivip::game.recharge-fail.remove-coin-fail');
+        }
+        $order = uniqid();
+        try
+        {
+            $realReceiver = !empty($receiver) ? $receiver : $user;
+            if (!$this->operator->recharge($realReceiver, $server, $order, $recharge, $params))
+            {
+                Log::error("Game game operator return fail.");
+                return __('hanoivip::game.recharge-fail.ops-recharge-fail');
+            }
+            $this->logs->logRecharge($uid, $server, $package, $order, $realReceiver->getAuthIdentifier());
+            // Event
+            event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));
+        }
+        catch (Exception $ex)
+        {
+            Log::error("Game game operator exception. Ex:" . $ex->getMessage());
+            return __('hanoivip::game.recharge-fail.ops-recharge-ex');
+        }
+        return true;
+    }
     
     /**
      * Non-thread-safe recharge
      * 
-     * @param Server $server
-     * @param Authenticatable $user
-     * @param Recharge $recharge
+     * @param ServerVO $server
+     * @param UserVO $user Sender. If receiver = null, he send himself
+     * @param RechargeVO $recharge
      * @param array $params
+     * @param UserVO $receiver
      * @return boolean
      */
-    public function recharge($server, $user, $recharge, $params)
+    public function recharge1($server, $user, $recharge, $params, $receiver = null)
     {
         $uid = $user->getAuthIdentifier();
         $package = $recharge->code;
@@ -123,41 +161,38 @@ class GameService
         if (!BalanceFacade::enough($uid, $coin, $cointype))
         {
             Log::error("Game user not enough coin");
-            return false;
+            return __('hanoivip::game.recharge-fail.not-enough-coin');
         }
-        if (empty($this->operator))
-        {
-            Log::error("Game operator is not set");
-            throw new Exception("Chuyển xu vào game không thành công. Vui lòng liên hệ GM.");
-        }
-        $order = uniqid();
-        try
-        {
-            if (!$this->operator->recharge($this->getGameUser($user), $server, $order, $recharge, $params))
-            {
-                Log::error("Game game operator return fail.");
-                return false;
-            }
-        }
-        catch (Exception $ex)
-        {
-            Log::error("Game game operator exception. Ex:" . $ex->getMessage());
-            return false;
-        }
-        $this->logs->logRecharge($uid, $server, $package, $order);
         $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
         if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
         {
             Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
+            return __('hanoivip::game.recharge-fail.remove-coin-fail');
         }
-        // Event
-        event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));
+        $order = uniqid();
+        try
+        {
+            $realReceiver = !empty($receiver) ? $receiver : $user;
+            if (!$this->operator->recharge($realReceiver, $server, $order, $recharge, $params))
+            {
+                Log::error("Game game operator return fail.");
+                return __('hanoivip::game.recharge-fail.ops-recharge-fail');
+            }
+            $this->logs->logRecharge($uid, $server, $package, $order, $realReceiver->getAuthIdentifier());
+            // Event
+            event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));
+        }
+        catch (Exception $ex)
+        {
+            Log::error("Game game operator exception. Ex:" . $ex->getMessage());
+            return __('hanoivip::game.recharge-fail.ops-recharge-ex');
+        }
         return true;
     }
     
     /**
      * 
-     * @param Server $server
+     * @param ServerVO $server
      * @return boolean
      */
     public function isMaintain($server)
@@ -215,17 +250,7 @@ class GameService
         $all = $this->servers->getAll();
         foreach ($all as $server)
         {
-            try 
-            {
-                if (empty($this->operator))
-                    throw new Exception("Game operator is not set.");
-                $onlines[$server->name] = $this->operator->online($server);
-            }
-            catch (Exception $ex)
-            {
-                Log::error("Game query online number of {$server->name} fail. Skip!");
-                $onlines[$server->name] = -1;
-            }
+            $onlines[$server->name] = $this->operator->online($server);
         }
         $expires = Carbon::now()->addSeconds(self::ONLINE_CACHE_DURATION);
         Cache::put(self::ONLINE_CACHE_PREFIX, $onlines, $expires);
@@ -247,17 +272,7 @@ class GameService
         $all = $this->servers->getAll();
         foreach ($all as $server)
         {
-            try 
-            {
-                if (empty($this->operator))
-                    throw new Exception("Game operator is not set.");
-                $ranks[$server->name] = $this->operator->rank($server);
-            }
-            catch (Exception $ex)
-            {
-                Log::error("Game query ranks of {$server->name} fail. Skip!");
-                $ranks[$server->name] = [];
-            }
+            $ranks[$server->name] = $this->operator->rank($server);
         }
         
         $expires = Carbon::now()->addSeconds(self::RANK_CACHE_DURATION);
@@ -267,16 +282,20 @@ class GameService
     
     /**
      * 
-     * @param Server $server
-     * @param Authenticatable $user
+     * @param string $serverName
+     * @param UserVO $user
      * @param string $itemId
      * @param number $itemCount
+     * @param array $params
+     * @param UserVO $receiver
      */
-    public function sendItem($server, $user, $itemId, $itemCount, $params = null)
+    public function sendItem($serverName, $user, $itemId, $itemCount, $params = null, $receiver = null)
     {
+        $server = $this->servers->getServerByName($serverName);
         // Send Item to game
         $order = uniqid();
-        if (!$this->operator->sentItem($this->getGameUser($user), $server, $order, $itemId, $itemCount, $params))
+        $realReceiver = empty($receiver) ? $user : $receiver;
+        if (!$this->operator->sentItem($realReceiver, $server, $order, $itemId, $itemCount, $params))
         {
             Log::error("Game request item exchange fail.");
             return false;
@@ -285,22 +304,47 @@ class GameService
     }
     
     /**
+     *
+     * @param ServerVO $server
+     * @param UserVO $user
+     * @param string $itemId
+     * @param number $itemCount
+     * @param array $params
+     * @param UserVO $receiver
+     */
+    public function sendItem1($server, $user, $itemId, $itemCount, $params = null, $receiver = null)
+    {
+        // Send Item to game
+        $order = uniqid();
+        $realReceiver = empty($receiver) ? $user : $receiver;
+        if (!$this->operator->sentItem($realReceiver, $server, $order, $itemId, $itemCount, $params))
+        {
+            Log::error("Game request item exchange fail.");
+            return false;
+        }
+        return true;
+    }
+    
+    /**
      * Query and cached info
      * 
-     * @param Authenticatable $user
-     * @param Server $server
+     * @param UserVO $user
+     * @param ServerVO|string $server
      */
     public function queryRoles($user, $server)
     {
+        $serverRec = $server;
+        if (gettype($server) == 'string')
+            $serverRec = $this->servers->getServerByName($server);
         try 
         {
             $uid = $user->getAuthIdentifier();
-            $key = self::ROLE_CACHE_PREFIX . $uid . '_' . $server->name;
+            $key = self::ROLE_CACHE_PREFIX . $uid . '_' . $serverRec->name;
             if (Cache::has($key))
             {
                 return Cache::get($key);
             }
-            $roles = $this->operator->characters($this->getGameUser($user), $server);
+            $roles = $this->operator->characters($user, $serverRec);
             if (!empty($roles))
                 Cache::put($key, $roles, Carbon::now()->addSeconds(self::ROLE_CACHE_DURATION));
             return $roles;
@@ -315,5 +359,10 @@ class GameService
     public function accountHasManyChars()
     {
         return $this->operator->supportMultiChar();
+    }
+    
+    public function getRechargePackages()
+    {
+        return Recharge::all();
     }
 }
