@@ -114,12 +114,6 @@ class GameService
             Log::error("Game user not enough coin");
             return __('hanoivip::game.recharge-fail.not-enough-coin');
         }
-        $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
-        if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
-        {
-            Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
-            return __('hanoivip::game.recharge-fail.remove-coin-fail');
-        }
         $order = uniqid();
         try
         {
@@ -130,14 +124,20 @@ class GameService
                 return __('hanoivip::game.recharge-fail.ops-recharge-fail');
             }
             $this->logs->logRecharge($uid, $server, $package, $order, $realReceiver->getAuthIdentifier());
-            // Event
-            event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));
         }
         catch (Exception $ex)
         {
             Log::error("Game game operator exception. Ex:" . $ex->getMessage());
             return __('hanoivip::game.recharge-fail.ops-recharge-ex');
         }
+        $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
+        if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
+        {
+            Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
+            return __('hanoivip::game.recharge-fail.remove-coin-fail');
+        }
+        // Event
+        event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));
         return true;
     }
     
