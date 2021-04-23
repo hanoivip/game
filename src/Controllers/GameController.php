@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\Game\Recharge;
-use Hanoivip\Game\Server;
 use Hanoivip\Game\Services\GameService;
 use Hanoivip\Game\Services\ScheduleService;
 use Hanoivip\Game\Services\ServerService;
@@ -311,5 +310,12 @@ class GameController extends Controller
 	    if ($request->has('error_message'))
 	        $message = $request->input('error_message');
 	    return view('hanoivip::recharge-result-fail', ['error_message' => $message]);
+	}
+
+	public function allRoles(Request $request)
+	{
+	    $user = Auth::user();
+        $roles = $this->games->allRole($user);
+        return ['error'=>0,'message'=>'success','data'=> $roles];
 	}
 }

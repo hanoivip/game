@@ -3,7 +3,6 @@
 namespace Hanoivip\Game\Services;
 
 use Hanoivip\Game\Recharge;
-use Hanoivip\Game\Server;
 use Hanoivip\GameContracts\ViewOjects\RechargeVO;
 use Hanoivip\GameContracts\ViewOjects\ServerVO;
 use Hanoivip\GameContracts\ViewOjects\UserVO;
@@ -31,6 +30,7 @@ class GameService
     
     const ROLE_CACHE_DURATION = 1800;//30mins
     
+    const ALL_ROLE_CACHE_PREFIX = "AllRoleOf";
     
     protected $servers;
     
@@ -354,6 +354,31 @@ class GameService
             Log::error($e->getMessage());
         }
         return [];
+    }
+    /**
+     * 
+     * @param UserVO $user
+     * @return array server name => array (roleid => rolename)
+     */
+    public function allRole($user)
+    {
+        $uid = $user->getAuthIdentifier();
+        $key = self::ALL_ROLE_CACHE_PREFIX . $uid;
+        $roles = [];
+        if (!Cache::has($key))
+        {
+            // query all roles from all servers..
+            $servers = $this->servers->getAll();
+            foreach ($servers as $server)
+            {
+                $roleInServer = $this->operator->characters($user, $server);
+                $roles[$server->name] = $roleInServer;
+            }
+            Cache::put($key, $roles, Carbon::now()->addSeconds(self::ROLE_CACHE_DURATION));
+        }
+        else
+            $roles = Cache::get($key);
+        return $roles;
     }
     
     public function accountHasManyChars()
