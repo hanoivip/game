@@ -29,6 +29,9 @@ class GenericOperator implements IGameOperator
 
     public function order($user, $server, $package, $params = null)
     {}
+    public function useCode($user, $server, $code, $params)
+    {}
+
 
     
 }

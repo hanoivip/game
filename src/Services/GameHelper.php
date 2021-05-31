@@ -2,8 +2,8 @@
 
 namespace Hanoivip\Game\Services;
 
-use Hanoivip\GameContracts\ViewOjects\ServerVO;
-use Hanoivip\GameContracts\ViewOjects\UserVO;
+use Hanoivip\GameContracts\ViewObjects\ServerVO;
+use Hanoivip\GameContracts\ViewObjects\UserVO;
 
 class GameHelper
 {

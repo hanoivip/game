@@ -140,56 +140,6 @@ class GameService
         event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));
         return true;
     }
-    
-    /**
-     * Non-thread-safe recharge
-     * 
-     * @param ServerVO $server
-     * @param UserVO $user Sender. If receiver = null, he send himself
-     * @param RechargeVO $recharge
-     * @param array $params
-     * @param UserVO $receiver
-     * @return boolean
-     */
-    public function recharge1($server, $user, $recharge, $params, $receiver = null)
-    {
-        $uid = $user->getAuthIdentifier();
-        $package = $recharge->code;
-        $coin = $recharge->coin;
-        $cointype = $recharge->coin_type;
-        // Check enough
-        if (!BalanceFacade::enough($uid, $coin, $cointype))
-        {
-            Log::error("Game user not enough coin");
-            return __('hanoivip::game.recharge-fail.not-enough-coin');
-        }
-        $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
-        if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
-        {
-            Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
-            return __('hanoivip::game.recharge-fail.remove-coin-fail');
-        }
-        $order = uniqid();
-        try
-        {
-            $realReceiver = !empty($receiver) ? $receiver : $user;
-            if (!$this->operator->recharge($realReceiver, $server, $order, $recharge, $params))
-            {
-                Log::error("Game game operator return fail.");
-                return __('hanoivip::game.recharge-fail.ops-recharge-fail');
-            }
-            $this->logs->logRecharge($uid, $server, $package, $order, $realReceiver->getAuthIdentifier());
-            // Event
-            event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));
-        }
-        catch (Exception $ex)
-        {
-            Log::error("Game game operator exception. Ex:" . $ex->getMessage());
-            return __('hanoivip::game.recharge-fail.ops-recharge-ex');
-        }
-        return true;
-    }
-    
     /**
      * 
      * @param ServerVO $server
@@ -302,29 +252,6 @@ class GameService
         }
         return true; 
     }
-    
-    /**
-     *
-     * @param ServerVO $server
-     * @param UserVO $user
-     * @param string $itemId
-     * @param number $itemCount
-     * @param array $params
-     * @param UserVO $receiver
-     */
-    public function sendItem1($server, $user, $itemId, $itemCount, $params = null, $receiver = null)
-    {
-        // Send Item to game
-        $order = uniqid();
-        $realReceiver = empty($receiver) ? $user : $receiver;
-        if (!$this->operator->sentItem($realReceiver, $server, $order, $itemId, $itemCount, $params))
-        {
-            Log::error("Game request item exchange fail.");
-            return false;
-        }
-        return true;
-    }
-    
     /**
      * Query and cached info
      * 
