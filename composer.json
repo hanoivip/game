@@ -8,7 +8,8 @@
 		"guzzlehttp/guzzle" : "^6.3",
 		"laravel/framework" : ">=5.5",
 		"laravel/tinker" : "~1.0",
-		"hanoivip/gate-client": "dev-main"
+		"hanoivip/payment-contract": "dev-master",
+		"hanoivip/iap-contract": "dev-master"
 	},
 	"autoload" : {
 		"psr-4" : {

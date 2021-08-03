@@ -3,12 +3,10 @@
 namespace Hanoivip\Game\Services;
 
 use Hanoivip\Game\Recharge;
-use Hanoivip\GameContracts\ViewOjects\RechargeVO;
-use Hanoivip\GameContracts\ViewOjects\ServerVO;
-use Hanoivip\GameContracts\ViewOjects\UserVO;
+use Hanoivip\GameContracts\ViewObjects\ServerVO;
+use Hanoivip\GameContracts\ViewObjects\UserVO;
 use Hanoivip\GameContracts\Contracts\IGameOperator;
 use Hanoivip\GameContracts\Contracts\ServerState;
-use Hanoivip\GateClient\Facades\BalanceFacade;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -95,25 +93,19 @@ class GameService
      * 
      * @param string $server Server name
      * @param UserVO $user
-     * @param string $recharge Recharge package code
+     * @param string $item Recharge package code
      * @param array $params
      * @param UserVO $receiver
      */
-    public function recharge($serverName, $user, $rechargeCode, $params, $receiver = null)
+    public function recharge($serverName, $user, $item, $params, $receiver = null)
     {
         $server = $this->servers->getServerByName($serverName);
-        $recharge = Recharge::where('code', $rechargeCode)->first();
+        $recharge = Recharge::where('code', $item)->first();
         // Process
         $uid = $user->getAuthIdentifier();
         $package = $recharge->code;
         $coin = $recharge->coin;
         $cointype = $recharge->coin_type;
-        // Check enough
-        if (!BalanceFacade::enough($uid, $coin, $cointype))
-        {
-            Log::error("Game user not enough coin");
-            return __('hanoivip::game.recharge-fail.not-enough-coin');
-        }
         $order = uniqid();
         try
         {
@@ -129,12 +121,6 @@ class GameService
         {
             Log::error("Game game operator exception. Ex:" . $ex->getMessage());
             return __('hanoivip::game.recharge-fail.ops-recharge-ex');
-        }
-        $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
-        if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
-        {
-            Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
-            return __('hanoivip::game.recharge-fail.remove-coin-fail');
         }
         // Event
         event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));

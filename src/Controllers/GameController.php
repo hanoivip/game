@@ -7,13 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Exception;
-use Hanoivip\Game\Recharge;
 use Hanoivip\Game\Services\GameService;
 use Hanoivip\Game\Services\ScheduleService;
 use Hanoivip\Game\Services\ServerService;
 use Hanoivip\Game\Services\UserLogService;
+use Hanoivip\Payment\Facades\BalanceFacade;
 use Illuminate\Auth\Authenticatable;
-use Hanoivip\GateClient\Facades\BalanceFacade;
 
 class GameController extends Controller
 {
