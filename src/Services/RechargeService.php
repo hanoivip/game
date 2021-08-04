@@ -50,14 +50,11 @@ class RechargeService
             if ($amount >= $price)
             {
                 dispatch(new SendCoin($orderDetail, $log));
-            }
-            if ($amount > $price)
-            {
                 $change = $amount - $price;
                 if (!empty($change))
                 {
                     Log::debug("RechargeService there was a change $change on $order");
-                    BalanceFacade::add($userId, $change, "RechargeChanges");
+                    BalanceFacade::add($userId, $change, "RechargeChanges:" . $order);
                     $status = 4;
                 }
             }

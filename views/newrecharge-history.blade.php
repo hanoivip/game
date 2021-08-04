@@ -25,7 +25,7 @@
 </table>
 
 @for($page=0; $page<$total_page; ++$page)
-	<a src="{{route('newhistory', ['page' => $page])}}">{{$page}}</a>
+	<a href="{{route('newhistory', ['page' => $page])}}">{{$page}}</a>
 @endfor
 
 @else
