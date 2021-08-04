@@ -11,11 +11,15 @@ use Hanoivip\PaymentContract\Facades\PaymentFacade;
 use Hanoivip\IapContract\Facades\IapFacade;
 use Hanoivip\Game\Facades\GameHelper;
 use Hanoivip\Game\Jobs\CheckPendingReceipt;
+use Hanoivip\Game\Services\RechargeService;
 
 class NewFlow extends Controller
 {   
-    public function __construct()
+    private $rechargeService;
+    
+    public function __construct(RechargeService $recharge)
     {
+        $this->rechargeService = $recharge;
     }
     
     public function startWizard(Request $request)
@@ -70,6 +74,33 @@ class NewFlow extends Controller
         $receipt = $request->input('receipt');
         try 
         {
+            $result = $this->rechargeService->onPaymentCallback(Auth::user()->getAuthIdentifier(), $order, $receipt);
+            /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
+            if ($result->isPending())
+            {
+                return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt]);
+            }
+            elseif ($result->isFailure())
+            {
+                return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
+            }
+            else
+            {
+                return view('hanoivip::newrecharge-result-success');
+            }
+        }
+        catch (Exception $ex)
+        {
+            Log::error("NewFlow recharge callback exception: " . $ex->getMessage() . $ex->getTraceAsString());
+            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.callback-error')]);
+        }
+    }
+    public function rechargeDone1(Request $request)
+    {
+        $order = $request->input('order');
+        $receipt = $request->input('receipt');
+        try
+        {
             $result = PaymentFacade::query($receipt);
             /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
             if ($result->isPending())
@@ -85,7 +116,7 @@ class NewFlow extends Controller
             {
                 // success
                 $orderDetail = IapFacade::detail($order);
-                $result = GameHelper::recharge(Auth::user()->getAuthIdentifier(), 
+                $result = GameHelper::recharge(Auth::user()->getAuthIdentifier(),
                     $orderDetail['server'], $orderDetail['item'], $orderDetail['role']);
                 if ($result === true)
                 {
@@ -135,6 +166,25 @@ class NewFlow extends Controller
      */
     public function history(Request $request)
     {
-        
+        try
+        {
+            $page = 0;
+            if ($request->has("page"))
+                $page = $request->input("page");
+            $result = $this->rechargeService->history(Auth::user()->getAuthIdentifier(), $page);
+            if ($request->ajax())
+            {
+                return ['error' => 0, 'message' => 'success', 'data' => ['history' => $result[0], 'total_page' => $result[1]]];
+            }
+            else
+            {
+                return view('hanoivip::newrecharge-history', ['history' => $result[0], 'total_page' => $result[1]]);
+            }
+        }
+        catch (Exception $ex)
+        {
+            Log::error("NewFlow query trans exception: " . $ex->getMessage());
+            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.query-error')]);
+        }
     }
 }
