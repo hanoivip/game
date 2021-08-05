@@ -8,13 +8,22 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Hanoivip\Game\RechargeLog;
 
 class SendCoin implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     //private $userId;
+    /**
+     * 
+     * @var array
+     */
     private $orderDetail;
+    /**
+     * 
+     * @var RechargeLog
+     */
     private $log;
     public function __construct($orderDetail, $log)
     {

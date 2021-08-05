@@ -8,8 +8,8 @@
 		"guzzlehttp/guzzle" : "^6.3",
 		"laravel/framework" : ">=5.5",
 		"laravel/tinker" : "~1.0",
-		"hanoivip/payment-contract": "dev-master",
-		"hanoivip/iap-contract": "dev-master"
+		"hanoivip/payment-contract": "dev-main",
+		"hanoivip/iap-contract": "dev-main"
 	},
 	"autoload" : {
 		"psr-4" : {
