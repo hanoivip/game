@@ -15,5 +15,6 @@ return [
             1 => 'Chuyển thành công',
             2 => 'Đang thử lại'
         ]
-    ]
+    ],
+    'not-enough-money' => 'Giá trị thanh toán chưa đủ, cần thanh toán thêm!'
 ];

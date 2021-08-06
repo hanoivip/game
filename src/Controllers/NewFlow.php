@@ -79,19 +79,26 @@ class NewFlow extends Controller
         try 
         {
             $result = $this->rechargeService->onPaymentCallback(Auth::user()->getAuthIdentifier(), $order, $receipt);
-            /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
-            if ($result->isPending())
+            if (gettype($result) == 'string')
             {
-                return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt]);
+                return view('hanoivip::newrecharge-failure', ['message' => $result]);
             }
-            elseif ($result->isFailure())
+            else 
             {
-                return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
-            }
-            else
-            {
-                return view('hanoivip::newrecharge-result-success');
-            }
+                /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
+                if ($result->isPending())
+                {
+                    return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt]);
+                }
+                elseif ($result->isFailure())
+                {
+                    return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
+                }
+                else
+                {
+                    return view('hanoivip::newrecharge-result-success');
+                }
+                }
         }
         catch (Exception $ex)
         {

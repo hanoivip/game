@@ -54,18 +54,21 @@ class RechargeService
                 if (!empty($change))
                 {
                     Log::debug("RechargeService there was a change $change on $order");
-                    BalanceFacade::add($userId, $change, "RechargeChanges:" . $order);
+                    BalanceFacade::add($userId, $change, "PaymentChanges:" . $order);
                     $status = 4;
                 }
             }
             else
             {
                 $status = 5;
+                BalanceFacade::add($userId, $amount, "PaymentRefund:" . $order);
             }
             $log->amount = $amount;
         }
         $log->status = $status;
         $log->save();
+        if ($status == 5)
+            return __('hanoivip::newrecharge.not-enough');
         return $result;
     }
     /**
