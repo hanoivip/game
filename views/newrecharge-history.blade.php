@@ -29,7 +29,7 @@
 @endfor
 
 @else
-	<p>__('hanoivip::newrecharge.history.empty')</p>
+	<p>{{__('hanoivip::newrecharge.history.empty')}}</p>
 @endif
 
 @endsection

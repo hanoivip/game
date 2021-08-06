@@ -11,7 +11,6 @@ use Exception;
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
 use Hanoivip\IapContract\Facades\IapFacade;
 use Hanoivip\Game\Facades\GameHelper;
-use Hanoivip\Game\Jobs\CheckPendingReceipt;
 use Hanoivip\Game\Services\RechargeService;
 use Hanoivip\Game\Jobs\GoogleSlowCard;
 
