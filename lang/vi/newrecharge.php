@@ -16,5 +16,8 @@ return [
             2 => 'Đang thử lại'
         ]
     ],
-    'not-enough-money' => 'Giá trị thanh toán chưa đủ, cần thanh toán thêm!'
+    'not-enough-money' => 'Giá trị thanh toán chưa đủ, cần thanh toán thêm! (số tiền vừa thanh toán đã trả về ví xu web)',
+    'shop-error' => 'Tải danh sách vật phẩm để mua thất bại, mời thử lại',
+    'callback-error' => 'Xử lý thanh toán gặp lỗi, mời liên hệ hỗ trợ viên. (callback-error)',
+    'query-error' => 'Truy vấn giao dịch gặp lỗi, mời thử lại trước khi liên hệ hỗ trợ viên'
 ];
