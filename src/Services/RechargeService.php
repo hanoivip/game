@@ -58,10 +58,14 @@ class RechargeService
             if ($amount >= $price)
             {
                 // dispatch(new SendCoin($orderDetail, $log->id));
-                GameHelper::recharge($orderDetail['user'],
+                $gsResult = GameHelper::recharge($orderDetail['user'],
                     $orderDetail['server'],
                     $orderDetail['item'],
                     $orderDetail['role']);
+                if ($gsResult)
+                    $log->game_status = 1;
+                else
+                    $log->game_status = 2;
                 
                 $change = $amount - $price;
                 if (!empty($change))
