@@ -75,7 +75,7 @@ class RechargeService
         $log->status = $status;
         $log->save();
         if ($status == 5)
-            return __('hanoivip::newrecharge.not-enough');
+            return __('hanoivip::newrecharge.not-enough-money');
         return $result;
     }
     /**
