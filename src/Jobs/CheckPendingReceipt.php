@@ -15,12 +15,15 @@ class CheckPendingReceipt implements ShouldQueue
 
     private $order;
     
+    private $userId;
+    
     private $receipt;
     
     private $service;
     
-    public function __construct($order, $receipt)
+    public function __construct($userId, $order, $receipt)
     {
+        $this->userId = $userId;
         $this->order = $order;
         $this->receipt = $receipt;
         $this->service = new RechargeService();
@@ -28,6 +31,6 @@ class CheckPendingReceipt implements ShouldQueue
 
     public function handle()
     {
-        $this->service->onPaymentCallback($this->order, $this->receipt);
+        $this->service->onPaymentCallback($this->userId, $this->order, $this->receipt);
     }
 }
