@@ -14,7 +14,6 @@ class SendCoin implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    //private $userId;
     /**
      * 
      * @var array
@@ -22,14 +21,13 @@ class SendCoin implements ShouldQueue
     private $orderDetail;
     /**
      * 
-     * @var RechargeLog
+     * @var number
      */
-    private $log;
-    public function __construct($orderDetail, $log)
+    private $logId;
+    public function __construct($orderDetail, $logId)
     {
-        //$this->userId = $userId;
         $this->orderDetail = $orderDetail;
-        $this->log = $log;
+        $this->logId = $logId;
     }
 
     public function handle()
@@ -38,15 +36,16 @@ class SendCoin implements ShouldQueue
             $this->orderDetail['server'], 
             $this->orderDetail['item'], 
             $this->orderDetail['role']);
+        $log = RechargeLog::find($this->logId);
         if ($result === true)
         {
-            $this->log->game_status = 1;
-            $this->log->save();
+            $log->game_status = 1;
+            $log->save();
         }
         else
         {
-            $this->log->game_status = 2;
-            $this->log->save();
+            $log->game_status = 2;
+            $log->save();
             $this->release(60);
         }
         

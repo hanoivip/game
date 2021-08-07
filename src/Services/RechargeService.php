@@ -56,7 +56,7 @@ class RechargeService
             // how is about currency??
             if ($amount >= $price)
             {
-                dispatch(new SendCoin($orderDetail, $log));
+                dispatch(new SendCoin($orderDetail, $log->id));
                 $change = $amount - $price;
                 if (!empty($change))
                 {
