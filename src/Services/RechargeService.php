@@ -11,18 +11,7 @@ use Hanoivip\Game\RechargeLog;
 use Hanoivip\Game\Jobs\SendCoin;
 
 class RechargeService
-{
-    public function queryPayment($userId, $receipt)
-    {
-        $log = RechargeLog::where('user_id', $userId)
-        ->where('receipt', $receipt)
-        ->first();
-        if (!empty($log))
-        {
-            return $this->onPaymentCallback($userId, $log->order, $receipt);
-        }
-    }
-    
+{   
     public function onPaymentCallback($userId, $order, $receipt)
     {
         $result = PaymentFacade::query($receipt);

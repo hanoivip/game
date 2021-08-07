@@ -111,7 +111,7 @@ class NewFlow extends Controller
         try
         {
             $trans = $request->input("trans");
-            $result = $this->rechargeService->queryPayment(Auth::user()->getAuthIdentifier(), $trans);
+            $result = $result = PaymentFacade::query($trans);
             /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
             if ($result->isPending())
             {
