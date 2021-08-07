@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Hanoivip\Payment\Facades\BalanceFacade;
 use Hanoivip\Game\RechargeLog;
 use Hanoivip\Game\Jobs\SendCoin;
+use Hanoivip\Game\Facades\GameHelper;
 
 class RechargeService
 {   
