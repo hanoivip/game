@@ -13,6 +13,7 @@ use Hanoivip\IapContract\Facades\IapFacade;
 use Hanoivip\Game\Facades\GameHelper;
 use Hanoivip\Game\Services\RechargeService;
 use Hanoivip\Game\Jobs\GoogleSlowCard;
+use Hanoivip\Game\Jobs\CheckPendingReceipt;
 
 class NewFlow extends Controller
 {   
@@ -87,6 +88,7 @@ class NewFlow extends Controller
                 /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
                 if ($result->isPending())
                 {
+                    dispatch(new CheckPendingReceipt(Auth::user()->getAuthIdentifier(), $order, $receipt));
                     return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt]);
                 }
                 elseif ($result->isFailure())
@@ -111,7 +113,7 @@ class NewFlow extends Controller
         try
         {
             $trans = $request->input("trans");
-            $result = $result = PaymentFacade::query($trans);
+            $result = $this->rechargeService->query(Auth::user()->getAuthIdentifier(), $trans);
             if (gettype($result) == 'string')
             {
                 return view('hanoivip::newrecharge-failure', ['message' => $result]);

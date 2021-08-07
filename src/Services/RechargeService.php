@@ -3,7 +3,6 @@
 namespace Hanoivip\Game\Services;
 
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
-use Hanoivip\Game\Jobs\CheckPendingReceipt;
 use Hanoivip\IapContract\Facades\IapFacade;
 use Illuminate\Support\Facades\Log;
 use Hanoivip\Payment\Facades\BalanceFacade;
@@ -12,6 +11,15 @@ use Hanoivip\Game\Jobs\SendCoin;
 
 class RechargeService
 {   
+    public function query($userId, $trans)
+    {
+        $log = RechargeLog::where('user_id', $userId)
+        ->where('receipt', $trans)->first();
+        if (!empty($log))
+        {
+            return $this->onPaymentCallback($userId, $log->order, $trans);
+        }
+    }
     public function onPaymentCallback($userId, $order, $receipt)
     {
         $result = PaymentFacade::query($receipt);
@@ -32,7 +40,6 @@ class RechargeService
         /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
         if ($result->isPending())
         {
-            dispatch(new CheckPendingReceipt($userId, $order, $receipt));
             $status = 1;
         }
         elseif ($result->isFailure())
