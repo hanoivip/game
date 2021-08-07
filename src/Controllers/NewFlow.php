@@ -97,7 +97,7 @@ class NewFlow extends Controller
                 {
                     return view('hanoivip::newrecharge-result-success');
                 }
-                }
+            }
         }
         catch (Exception $ex)
         {
@@ -112,18 +112,25 @@ class NewFlow extends Controller
         {
             $trans = $request->input("trans");
             $result = $result = PaymentFacade::query($trans);
-            /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
-            if ($result->isPending())
+            if (gettype($result) == 'string')
             {
-                return view('hanoivip::newrecharge-result-pending', ['trans' => $trans]);
+                return view('hanoivip::newrecharge-failure', ['message' => $result]);
             }
-            elseif ($result->isFailure())
+            else 
             {
-                return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
-            }
-            else
-            {
-                return view('hanoivip::newrecharge-result-success');
+                /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
+                if ($result->isPending())
+                {
+                    return view('hanoivip::newrecharge-result-pending', ['trans' => $trans]);
+                }
+                elseif ($result->isFailure())
+                {
+                    return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
+                }
+                else
+                {
+                    return view('hanoivip::newrecharge-result-success');
+                }
             }
         }
         catch (Exception $ex)
