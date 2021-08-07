@@ -43,7 +43,7 @@ class RechargeService
         /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
         if ($result->isPending())
         {
-            dispatch(new CheckPendingReceipt($userId, $order, $receipt))->delay(now()->addSecond(60));
+            dispatch(new CheckPendingReceipt($userId, $order, $receipt));
             $status = 1;
         }
         elseif ($result->isFailure())
