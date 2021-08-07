@@ -12,6 +12,8 @@ use Hanoivip\Game\Services\RechargeService;
 class CheckPendingReceipt implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    
+    public $tries = 15;
 
     private $order;
     
@@ -31,6 +33,10 @@ class CheckPendingReceipt implements ShouldQueue
 
     public function handle()
     {
-        $this->service->onPaymentCallback($this->userId, $this->order, $this->receipt);
+        $result = $this->service->onPaymentCallback($this->userId, $this->order, $this->receipt);
+        if ($result->isPending())
+        {
+            $this->release(60);
+        }
     }
 }

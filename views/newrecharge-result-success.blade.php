@@ -4,7 +4,7 @@
 
 @section('content')
 
-<p>{{__('hanoivip::recharge.success')}}</p>
+<p>{{__('hanoivip::newrecharge.success')}}</p>
 <a href="{{ route('newrecharge') }}">Chuyển nữa</a>
 
 @endsection

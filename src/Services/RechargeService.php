@@ -2,16 +2,38 @@
 
 namespace Hanoivip\Game\Services;
 
+use Carbon\Carbon;
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
 use Hanoivip\Game\Jobs\CheckPendingReceipt;
 use Hanoivip\IapContract\Facades\IapFacade;
 use Illuminate\Support\Facades\Log;
+use Exception;
 use Hanoivip\Payment\Facades\BalanceFacade;
 use Hanoivip\Game\RechargeLog;
 use Hanoivip\Game\Jobs\SendCoin;
 
 class RechargeService
 {
+    /*
+    public function updateDelayLog()
+    {
+        $pendings = RechargeLog::where('status', 1)
+        ->where('created_at', '>=', Carbon::now()->subMonth()->timestamp)
+        ->get();
+        foreach ($pendings as $pending)
+        {
+            try
+            {
+                $this->onPaymentCallback($pending->user_id, $pending->order, $this->receipt);
+            }
+            catch (Exception $ex)
+            {
+                Log::error("Recharge service update pending payment error.");
+                continue;
+            }
+        }
+    }*/
+    
     public function onPaymentCallback($userId, $order, $receipt)
     {
         $result = PaymentFacade::query($receipt);

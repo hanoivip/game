@@ -4,9 +4,9 @@
 
 @section('content')
 
-<p>{{__('hanoivip::recharge.pending')}}</p>
+<p>{{__('hanoivip::newrecharge.pending')}}</p>
 
-<a href="{{ route('newrecharge.refresh', ['trans' => $trans]) }}">Refresh</a>
+<a href="{{ route('newrecharge.refresh', ['trans' => $trans]) }}">Cập nhật</a>
 
 <a href="{{ route('newrecharge') }}">Chuyển nữa</a>
 

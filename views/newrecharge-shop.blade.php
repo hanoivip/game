@@ -19,7 +19,7 @@
 	<button type="submit">Next</button>
 </form>
 @else
-	<p>{{__('hanoivip::newrecharge.shop.empty')}}</p>
+	<p>{{__('hanoivip::newrecharge.shop-empty')}}</p>
 @endif
 
 @endsection
