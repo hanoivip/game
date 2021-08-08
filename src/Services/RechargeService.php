@@ -4,6 +4,7 @@ namespace Hanoivip\Game\Services;
 
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
 use Hanoivip\IapContract\Facades\IapFacade;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Hanoivip\Payment\Facades\BalanceFacade;
 use Hanoivip\Game\RechargeLog;
@@ -26,6 +27,9 @@ class RechargeService
      */
     public function onPaymentCallback($userId, $order, $receipt)
     {
+        $lock = Cache::lock('PaymentCallback@' . $userId, 10);
+        if (!$lock->get())
+            return __('hanoivip::newrecharge.callback-in-progress');
         $result = PaymentFacade::query($receipt);
         $log = RechargeLog::where('user_id', $userId)
         ->where('order', $order)
@@ -78,6 +82,7 @@ class RechargeService
         }
         $log->status = $status;
         $log->save();
+        $lock->release();
         if ($status == 5)
             return __('hanoivip::newrecharge.not-enough-money');
         return $result;
