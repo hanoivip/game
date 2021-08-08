@@ -35,8 +35,7 @@ class CheckPendingReceipt implements ShouldQueue
 
     public function handle()
     {
-        Log::debug("CheckPendingReceipt " . $this->userId);
-        Redis::funnel('CheckPendingReceipt@' + $this->receipt)->limit(1)->then(function () {
+        Redis::funnel('CheckPendingReceipt@' . $this->userId)->limit(1)->then(function () {
             $result = $this->service->onPaymentCallback($this->userId, $this->order, $this->receipt);
             if ($result->isPending())
             {
