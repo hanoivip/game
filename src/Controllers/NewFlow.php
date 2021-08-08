@@ -117,7 +117,7 @@ class NewFlow extends Controller
             $result = $this->rechargeService->query(Auth::user()->getAuthIdentifier(), $trans);
             if (gettype($result) == 'string')
             {
-                return view('hanoivip::newrecharge-result-pending', ['trans' => $trans]);
+                return view('hanoivip::newrecharge-failure', ['message' => $result]);
             }
             else 
             {

@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Log;
 use Hanoivip\Payment\Facades\BalanceFacade;
 use Hanoivip\Game\RechargeLog;
 use Hanoivip\Game\Jobs\SendCoin;
-use Hanoivip\Game\Facades\GameHelper;
 
 class RechargeService
 {   
@@ -19,11 +18,14 @@ class RechargeService
         ->where('receipt', $trans)->first();
         if (!empty($log))
         {
-            return $this->onPaymentCallback($userId, $log->order, $trans);
+            if ($log->status == 5)
+                return __('hanoivip::newrecharge.not-enough-money');
+            return PaymentFacade::query($trans);
         }
+        return __('hanoivip::newrecharge.receipt-not-exists');
     }
     /**
-     * Thread un-safe
+     * Thread safe
      */
     public function onPaymentCallback($userId, $order, $receipt)
     {
