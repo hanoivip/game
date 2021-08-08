@@ -6,6 +6,7 @@ use Hanoivip\Game\Facades\GameHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Hanoivip\Game\RechargeLog;
@@ -24,6 +25,9 @@ class SendCoin implements ShouldQueue
      * @var number
      */
     private $logId;
+    
+    public $tries = 5;
+    
     public function __construct($orderDetail, $logId)
     {
         $this->orderDetail = $orderDetail;
@@ -32,22 +36,27 @@ class SendCoin implements ShouldQueue
 
     public function handle()
     {
-        $result = GameHelper::recharge($this->orderDetail['user'],
-            $this->orderDetail['server'], 
-            $this->orderDetail['item'], 
-            $this->orderDetail['role']);
-        $log = RechargeLog::find($this->logId);
-        if ($result === true)
-        {
-            $log->game_status = 1;
-            $log->save();
-        }
-        else
-        {
-            $log->game_status = 2;
-            $log->save();
-            $this->release(60);
-        }
+        Redis::throttle(SendCoin::class)->allow(30)->every(60)->then(function () {
+            $result = GameHelper::recharge($this->orderDetail['user'],
+                $this->orderDetail['server'],
+                $this->orderDetail['item'],
+                $this->orderDetail['role']);
+            $log = RechargeLog::find($this->logId);
+            if ($result === true)
+            {
+                $log->game_status = 1;
+                $log->save();
+            }
+            else
+            {
+                $log->game_status = 2;
+                $log->save();
+                $this->release(60);
+            }
+        }, function () {
+            // Could not obtain lock...
+            return $this->release(60);
+        });
         
     }
 }

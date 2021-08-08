@@ -5,6 +5,7 @@ namespace Hanoivip\Game\Jobs;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Hanoivip\Game\Services\RechargeService;
@@ -33,10 +34,17 @@ class CheckPendingReceipt implements ShouldQueue
 
     public function handle()
     {
-        $result = $this->service->onPaymentCallback($this->userId, $this->order, $this->receipt);
-        if ($result->isPending())
-        {
-            $this->release(60);
-        }
+        Redis::throttle(CheckPendingReceipt::class)->allow(30)->every(60)->then(function () {
+            $result = $this->service->onPaymentCallback($this->userId, $this->order, $this->receipt);
+            if ($result->isPending())
+            {
+                $this->release(60);
+            }
+        }, function () {
+            // Could not obtain lock...
+            
+            return $this->release(60);
+        });
+        
     }
 }
