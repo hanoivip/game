@@ -46,45 +46,51 @@ class RechargeService
             $log->status = 0;
             $log->save();
         }
-        $status = 0;
         /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
         if ($result->isPending())
         {
-            $status = 1;
+            $log->status = 1;
         }
         elseif ($result->isFailure())
         {
-            $status = 2;
+            $log->status = 2;
         }
         else
         {
-            $status = 3;
-            $orderDetail = IapFacade::detail($order);
-            $amount = intval($result->getAmount());
-            $price = intval($orderDetail['item_price']);
-            // how is about currency??
-            if ($amount >= $price)
+            if ($log->status < 3)
             {
-                dispatch(new SendCoin($orderDetail, $log->id));
-                $change = $amount - $price;
-                if (!empty($change))
+                // first time to process success
+                $log->status = 3;
+                $orderDetail = IapFacade::detail($order);
+                $amount = intval($result->getAmount());
+                $price = intval($orderDetail['item_price']);
+                // how is about currency??
+                if ($amount >= $price)
                 {
-                    Log::debug("RechargeService there was a change $change on $order");
-                    BalanceFacade::add($userId, $change, "PaymentChanges:" . $order);
-                    $status = 4;
+                    dispatch(new SendCoin($orderDetail, $log->id));
+                    $change = $amount - $price;
+                    if (!empty($change))
+                    {
+                        Log::debug("RechargeService there was a change $change on $order");
+                        BalanceFacade::add($userId, $change, "PaymentChanges:" . $order);
+                        $log->status = 4;
+                    }
                 }
+                else
+                {
+                    $log->status = 5;
+                    BalanceFacade::add($userId, $amount, "PaymentRefund:" . $order);
+                }
+                $log->amount = $amount;
             }
             else
             {
-                $status = 5;
-                BalanceFacade::add($userId, $amount, "PaymentRefund:" . $order);
+                // already process
             }
-            $log->amount = $amount;
         }
-        $log->status = $status;
         $log->save();
         $lock->release();
-        if ($status == 5)
+        if ($log->status == 5)
             return __('hanoivip::newrecharge.not-enough-money');
         return $result;
     }
