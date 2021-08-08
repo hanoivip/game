@@ -23,5 +23,6 @@ return [
     'callback-error' => 'Xử lý thanh toán gặp lỗi, mời liên hệ hỗ trợ viên. (callback-error)',
     'query-error' => 'Truy vấn giao dịch gặp lỗi, mời thử lại trước khi liên hệ hỗ trợ viên',
     'pending' => 'Giao dịch cần thêm chút thời gian để hoàn thành..đợi xíu..',
-    'success' => 'Thanh toán thành công.'
+    'success' => 'Thanh toán thành công.',
+    'callback-in-progress' => 'Đang xử lý rồi, hãy đợi chút..',
 ];

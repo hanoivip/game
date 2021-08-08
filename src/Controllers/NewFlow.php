@@ -5,6 +5,7 @@ namespace Hanoivip\Game\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Imdhemy\Purchases\Facades\Product;
 use Exception;
@@ -76,35 +77,46 @@ class NewFlow extends Controller
         $receipt = $request->input('receipt');
         if ($this->isGoogleReceipt($receipt))
             return $this->onGoogleAppPurchased($request);
+        $lock = Cache::lock('RechargeDone@' . Auth::user()->getAuthIdentifier(), 10);
         try 
         {
-            $result = $this->rechargeService->onPaymentCallback(Auth::user()->getAuthIdentifier(), $order, $receipt);
-            if (gettype($result) == 'string')
+            if (!$lock->get())
             {
-                return view('hanoivip::newrecharge-failure', ['message' => $result]);
+                $result = $this->rechargeService->onPaymentCallback(Auth::user()->getAuthIdentifier(), $order, $receipt);
+                if (gettype($result) == 'string')
+                {
+                    return view('hanoivip::newrecharge-failure', ['message' => $result]);
+                }
+                else 
+                {
+                    /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
+                    if ($result->isPending())
+                    {
+                        dispatch(new CheckPendingReceipt(Auth::user()->getAuthIdentifier(), $order, $receipt))->delay(60);
+                        return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt]);
+                    }
+                    elseif ($result->isFailure())
+                    {
+                        return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
+                    }
+                    else
+                    {
+                        return view('hanoivip::newrecharge-result-success');
+                    }
+                }
             }
             else 
             {
-                /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
-                if ($result->isPending())
-                {
-                    dispatch(new CheckPendingReceipt(Auth::user()->getAuthIdentifier(), $order, $receipt));
-                    return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt]);
-                }
-                elseif ($result->isFailure())
-                {
-                    return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
-                }
-                else
-                {
-                    return view('hanoivip::newrecharge-result-success');
-                }
+                return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.callback-in-progress')]);
             }
         }
         catch (Exception $ex)
         {
             Log::error("NewFlow recharge callback exception: " . $ex->getMessage() . $ex->getTraceAsString());
             return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.callback-error')]);
+        }
+        finally {
+            optional($lock)->release();
         }
     }
     
