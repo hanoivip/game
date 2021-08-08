@@ -5,6 +5,7 @@ namespace Hanoivip\Game\Jobs;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -34,7 +35,8 @@ class CheckPendingReceipt implements ShouldQueue
 
     public function handle()
     {
-        Redis::funnel('CheckPendingReceipt@' + $this->userId)->limit(1)->then(function () {
+        Log::debug("CheckPendingReceipt " . $this->userId);
+        Redis::funnel('CheckPendingReceipt@' + $this->receipt)->limit(1)->then(function () {
             $result = $this->service->onPaymentCallback($this->userId, $this->order, $this->receipt);
             if ($result->isPending())
             {
