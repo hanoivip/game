@@ -58,7 +58,6 @@ class RechargeService
         {
             $status = 3;
             $orderDetail = IapFacade::detail($order);
-            //Log::debug(print_r($orderDetail, true));
             $amount = intval($result->getAmount());
             $price = intval($orderDetail['item_price']);
             // how is about currency??
