@@ -80,7 +80,7 @@ class NewFlow extends Controller
         $lock = Cache::lock('RechargeDone@' . Auth::user()->getAuthIdentifier(), 10);
         try 
         {
-            if (!$lock->get())
+            if ($lock->get())
             {
                 $result = $this->rechargeService->onPaymentCallback(Auth::user()->getAuthIdentifier(), $order, $receipt);
                 if (gettype($result) == 'string')
@@ -122,35 +122,47 @@ class NewFlow extends Controller
     
     public function query(Request $request)
     {
+        $lock = Cache::lock('RechargeQuery@' . Auth::user()->getAuthIdentifier(), 10);
         try
         {
-            $trans = $request->input("trans");
-            $result = $this->rechargeService->query(Auth::user()->getAuthIdentifier(), $trans);
-            if (gettype($result) == 'string')
+            if ($lock->get())
             {
-                return view('hanoivip::newrecharge-failure', ['message' => $result]);
+                $trans = $request->input("trans");
+                $result = $this->rechargeService->query(Auth::user()->getAuthIdentifier(), $trans);
+                if (gettype($result) == 'string')
+                {
+                    return view('hanoivip::newrecharge-failure', ['message' => $result]);
+                }
+                else 
+                {
+                    /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
+                    if ($result->isPending())
+                    {
+                        return view('hanoivip::newrecharge-result-pending', ['trans' => $trans]);
+                    }
+                    elseif ($result->isFailure())
+                    {
+                        return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
+                    }
+                    else
+                    {
+                        return view('hanoivip::newrecharge-result-success');
+                    }
+                }
             }
-            else 
+            else
             {
-                /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
-                if ($result->isPending())
-                {
-                    return view('hanoivip::newrecharge-result-pending', ['trans' => $trans]);
-                }
-                elseif ($result->isFailure())
-                {
-                    return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
-                }
-                else
-                {
-                    return view('hanoivip::newrecharge-result-success');
-                }
+                return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.callback-in-progress')]);
             }
         }
         catch (Exception $ex)
         {
             Log::error("NewFlow query trans exception: " . $ex->getMessage());
             return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.query-error')]);
+        }
+        finally 
+        {
+            optional($lock)->release();
         }
     }
     /**

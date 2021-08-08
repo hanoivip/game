@@ -21,6 +21,9 @@ class RechargeService
             return $this->onPaymentCallback($userId, $log->order, $trans);
         }
     }
+    /**
+     * Thread un-safe
+     */
     public function onPaymentCallback($userId, $order, $receipt)
     {
         $result = PaymentFacade::query($receipt);
@@ -58,15 +61,6 @@ class RechargeService
             if ($amount >= $price)
             {
                 dispatch(new SendCoin($orderDetail, $log->id));
-                /*$gsResult = GameHelper::recharge($orderDetail['user'],
-                    $orderDetail['server'],
-                    $orderDetail['item'],
-                    $orderDetail['role']);
-                if ($gsResult)
-                    $log->game_status = 1;
-                else
-                    $log->game_status = 2;*/
-                
                 $change = $amount - $price;
                 if (!empty($change))
                 {
