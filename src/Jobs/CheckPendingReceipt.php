@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Hanoivip\Game\Services\RechargeService;
+use Hanoivip\PaymentMethodContract\IPaymentResult;
 
 class CheckPendingReceipt implements ShouldQueue
 {
@@ -37,7 +38,7 @@ class CheckPendingReceipt implements ShouldQueue
     {
         Redis::funnel('CheckPendingReceipt@' . $this->userId)->limit(1)->then(function () {
             $result = $this->service->onPaymentCallback($this->userId, $this->order, $this->receipt);
-            if ($result->isPending())
+            if (($result instanceof IPaymentResult) && $result->isPending())
             {
                 $this->release(60);
             }
