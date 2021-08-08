@@ -36,7 +36,7 @@ class SendCoin implements ShouldQueue
 
     public function handle()
     {
-        Redis::throttle(SendCoin::class)->allow(30)->every(60)->then(function () {
+        Redis::funnel('CheckPendingReceipt@' + $this->orderDetail['user'])->limit(1)->then(function () {
             $result = GameHelper::recharge($this->orderDetail['user'],
                 $this->orderDetail['server'],
                 $this->orderDetail['item'],
