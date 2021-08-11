@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Hanoivip\Game\Recharge;
 use Hanoivip\Game\Services\GameService;
 use Hanoivip\Game\Services\ScheduleService;
 use Hanoivip\Game\Services\ServerService;
@@ -153,6 +154,30 @@ class GameController extends Controller
 		return view('hanoivip::recharge', $viewData);
 	}
 	
+	// move from service to here
+	private function _recharge($svname, $user, $package, $params)
+	{
+	    $server = $this->servers->getServerByName($svname);
+	    $recharge = Recharge::where('code', $package)->first();
+	    
+	    $uid = $user->getAuthIdentifier();
+	    $package = $recharge->code;
+	    $coin = $recharge->coin;
+	    $cointype = $recharge->coin_type;
+	    if (!BalanceFacade::enough($uid, $coin, $cointype))
+	    {
+	        Log::error("Game user not enough coin");
+	        return __('hanoivip::game.recharge-fail.not-enough-coin');
+	    }
+	    $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
+	    if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
+	    {
+	        Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
+	        return __('hanoivip::game.recharge-fail.remove-coin-fail');
+	    }
+	    return $this->games->recharge($svname, $user, $package, $params);
+	}
+	
 	/**
 	 * https://laravelcollective.com/docs/5.4/html
 	 * From laravel 5.0, Html Helper is not default included.
@@ -185,7 +210,9 @@ class GameController extends Controller
 	            else
 	               return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.too-fast')]);
 	        }
-	        $result = $this->games->recharge($svname, $user, $package, $params);
+	        // Check enough
+	        
+	        $result = $this->_recharge($svname, $user, $package, $params);
     	    $lock->release();
     	    if ($result === true)
     	    {
