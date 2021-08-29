@@ -82,7 +82,14 @@ class NewFlow extends Controller
             $result = $this->rechargeService->onPaymentCallback(Auth::user()->getAuthIdentifier(), $order, $receipt);
             if (gettype($result) == 'string')
             {
-                return view('hanoivip::newrecharge-failure', ['message' => $result]);
+                if ($request->ajax())
+                {
+                    return ['error' => 1, 'message' => $result, 'data' => []];
+                }
+                else
+                {
+                    return view('hanoivip::newrecharge-failure', ['message' => $result]);
+                }
             }
             else 
             {
@@ -90,15 +97,36 @@ class NewFlow extends Controller
                 if ($result->isPending())
                 {
                     dispatch(new CheckPendingReceipt(Auth::user()->getAuthIdentifier(), $order, $receipt))->delay(60);
-                    return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt]);
+                    if ($request->ajax())
+                    {
+                        return ['error' => 0, 'message' => 'pending', 'data' => ['trans' => $receipt]];
+                    }
+                    else
+                    {
+                        return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt]);
+                    }
                 }
                 elseif ($result->isFailure())
                 {
-                    return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
+                    if ($request->ajax())
+                    {
+                        return ['error' => 2, 'message' => $result->getDetail(), 'data' => []];
+                    }
+                    else
+                    {
+                        return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
+                    }
                 }
                 else
                 {
-                    return view('hanoivip::newrecharge-result-success');
+                    if ($request->ajax())
+                    {
+                        return ['error' => 0, 'message' => 'success', 'data' => []];
+                    }
+                    else
+                    {
+                        return view('hanoivip::newrecharge-result-success');
+                    }
                 }
             }
         }
