@@ -71,12 +71,36 @@ class NewFlow extends Controller
             Log::error("NewFlow recharge exception: " . $ex->getMessage());
         }
     }
+    
+    private function isAppReceipt($receipt)
+    {
+        try
+        {
+            $json = json_decode($receipt, true);
+            if (!empty($json))
+            {
+                return isset($json['trans']) && isset($json['detail']) && isset($json['isPending']) && isset($json['isFailure']) && isset($json['isSuccess']);
+            }
+            return false;
+        }
+        catch (Exception $ex)
+        {
+            Log::error('NewFlow check app receipt: ' . $ex->getMessage());
+            return false;
+        }
+    }
+    
     public function rechargeDone(Request $request)
     {
         $order = $request->input('order');
         $receipt = $request->input('receipt');
         if ($this->isGoogleReceipt($receipt))
             return $this->onGoogleAppPurchased($request);
+        if ($this->isAppReceipt($receipt))
+        {
+            $receiptArr = json_decode($receipt, true);
+            $receipt = $receiptArr['trans'];
+        }
         try 
         {
             $result = $this->rechargeService->onPaymentCallback(Auth::user()->getAuthIdentifier(), $order, $receipt);
@@ -133,7 +157,14 @@ class NewFlow extends Controller
         catch (Exception $ex)
         {
             Log::error("NewFlow recharge callback exception: " . $ex->getMessage() . $ex->getTraceAsString());
-            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.callback-error')]);
+            if ($request->ajax())
+            {
+                return ['error' => 3, 'message' => __('hanoivip::newrecharge.callback-error'), 'data' => []];
+            }
+            else
+            {
+                return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.callback-error')]);
+            }
         }
     }
     
