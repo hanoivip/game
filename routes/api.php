@@ -16,4 +16,6 @@ Route::middleware([
     // payment callback
     Route::any('/game/payment-callback', 'NewFlow@rechargeDone');
     Route::any('/purchase/callback', 'NewFlow@rechargeDone');//apk
+    // payment history
+    Route::any('/payment/history', 'NewFlow@history');
 });
