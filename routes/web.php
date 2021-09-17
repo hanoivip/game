@@ -21,3 +21,13 @@ Route::middleware('web', 'auth:web')->namespace('Hanoivip\Game\Controllers')->gr
     Route::any('/newrecharge/refresh', 'NewFlow@query')->name('newrecharge.refresh');
     Route::get('/newhistory', 'NewFlow@history')->name('newhistory');
 });
+
+Route::middleware([
+    'web',
+    'admin'
+])->namespace('Hanoivip\Game\Controllers')
+->prefix('ecmin')
+->group(function () {
+    // New flow history
+    Route::post('/newrecharge/history', 'Admin@history')->name('ecmin.newrecharge.history');
+});
