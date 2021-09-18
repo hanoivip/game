@@ -287,7 +287,7 @@ class NewFlow extends Controller
         catch (Exception $ex)
         {
             Log::error("Order process receipt error. Delay processing..");
-            dispatch(new GoogleSlowCard($productId, $token));
+            dispatch(new GoogleSlowCard($order, $productId, $token));
             return ['error' => 0, 'message' => 'We need more time to process this payment', 'data' => []];
         }
         
