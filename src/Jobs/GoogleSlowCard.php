@@ -38,7 +38,8 @@ class GoogleSlowCard implements ShouldQueue
      */
     public function handle()
     {
-        Redis::funnel('GoogleSlow@' . $this->order)->limit(1)->then(function () {
+        //Redis::funnel('GoogleSlow@' . $this->order)->limit(1)->then(function () {
+        Redis::throttle('GoogleSlow@' . $this->order)->block(0)->allow(1)->every(180)->then(function () {
             $receipt = Product::googlePlay()->id($this->productId)->token($this->token)->get();
             if (!empty($receipt) && $receipt->getPurchaseState()->isPurchased())
             {
@@ -50,7 +51,7 @@ class GoogleSlowCard implements ShouldQueue
                     $orderDetail['role']);
                 //if (!$result) $this->release(120);//not work?
                 //$this->delay = 120; not work too, fuck laravel 5
-                $this->delay(120);
+                //$this->delay(120);not work? fuck laravel 5
                 $this->release();
                 // job done
             }
@@ -59,7 +60,7 @@ class GoogleSlowCard implements ShouldQueue
                 // retry job
                 //$this->release(300);
                 //$this->delay = 300;not work too
-                $this->delay(180);
+                //$this->delay(180);not work fuck laravel 5
                 $this->release();
             }
             if (empty($receipt) || $receipt->getPurchaseState()->isCancelled())
