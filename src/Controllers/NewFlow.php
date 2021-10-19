@@ -269,7 +269,7 @@ class NewFlow extends Controller
             if (!empty($receipt) && $receipt->getPurchaseState()->isPending())
             {
                 Log::debug(">> slow card processing..");
-                dispatch(new GoogleSlowCard($order, $productId, $token));
+                dispatch(new GoogleSlowCard($order, $productId, $token))->delay(180);;
                 return ['error' => 0, 'message' => 'Delay payment', 'data' => []];
             }
             if (!empty($receipt) && $receipt->getPurchaseState()->isPurchased())
@@ -287,7 +287,7 @@ class NewFlow extends Controller
         catch (Exception $ex)
         {
             Log::error("Order process receipt error. Delay processing..");
-            dispatch(new GoogleSlowCard($order, $productId, $token));
+            dispatch(new GoogleSlowCard($order, $productId, $token))->delay(300);;
             return ['error' => 0, 'message' => 'We need more time to process this payment', 'data' => []];
         }
         

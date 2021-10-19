@@ -24,8 +24,6 @@ class GoogleSlowCard implements ShouldQueue
     
     private $order;
     
-    public $delay = 180;
-    
     public function __construct($order, $productId, $token)
     {
         $this->order = $order;
@@ -52,6 +50,7 @@ class GoogleSlowCard implements ShouldQueue
                     $orderDetail['role']);
                 //if (!$result) $this->release(120);//not work?
                 //$this->delay = 120; not work too, fuck laravel 5
+                $this->delay(120);
                 $this->release();
                 // job done
             }
@@ -60,6 +59,7 @@ class GoogleSlowCard implements ShouldQueue
                 // retry job
                 //$this->release(300);
                 //$this->delay = 300;not work too
+                $this->delay(180);
                 $this->release();
             }
             if (empty($receipt) || $receipt->getPurchaseState()->isCancelled())
