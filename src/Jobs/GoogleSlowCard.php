@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Imdhemy\Purchases\Facades\Product;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Log;
 
 class GoogleSlowCard implements ShouldQueue
 {
@@ -24,7 +25,7 @@ class GoogleSlowCard implements ShouldQueue
     
     private $order;
     
-    //public $retryAfter = 180;
+    public $retryAfter = 180;
     
     public function __construct($order, $productId, $token)
     {
@@ -41,36 +42,44 @@ class GoogleSlowCard implements ShouldQueue
     public function handle()
     {
         //Redis::funnel('GoogleSlow@' . $this->order)->limit(1)->then(function () {
-        Redis::throttle('GoogleSlow@' . $this->order)->block(0)->allow(1)->every(180)->then(function () {
-            $receipt = Product::googlePlay()->id($this->productId)->token($this->token)->get();
-            if (!empty($receipt) && $receipt->getPurchaseState()->isPurchased())
+        //Redis::throttle('GoogleSlow@' . $this->order)->block(0)->allow(1)->every(180)->then(function () {
+            try 
             {
-                // success
-                $orderDetail = IapFacade::detail($this->order);
-                $result = GameHelper::recharge($orderDetail['user'],
-                    $orderDetail['server'],
-                    $orderDetail['item'],
-                    $orderDetail['role']);
-                //if (!$result) $this->release(120);//not work?
-                //$this->delay = 120; not work too, fuck laravel 5
-                //$this->delay(120);not work? fuck laravel 5
-                $this->release(60);
-                // job done
-            }
-            if (!empty($receipt) && $receipt->getPurchaseState()->isPending())
+                $receipt = Product::googlePlay()->id($this->productId)->token($this->token)->get();
+                if (!empty($receipt) && $receipt->getPurchaseState()->isPurchased())
+                {
+                    // success
+                    $orderDetail = IapFacade::detail($this->order);
+                    $result = GameHelper::recharge($orderDetail['user'],
+                        $orderDetail['server'],
+                        $orderDetail['item'],
+                        $orderDetail['role']);
+                    //if (!$result) $this->release(120);//not work?
+                    //$this->delay = 120; not work too, fuck laravel 5
+                    //$this->delay(120);not work? fuck laravel 5
+                    $this->release();
+                    // job done
+                }
+                if (!empty($receipt) && $receipt->getPurchaseState()->isPending())
+                {
+                    // retry job
+                    //$this->release(300);
+                    //$this->delay = 300;not work too
+                    //$this->delay(180);not work fuck laravel 5
+                    $this->release();
+                }
+                if (empty($receipt) || $receipt->getPurchaseState()->isCancelled())
+                {
+                    // job done
+                }
+            } 
+            catch (Exception $e) 
             {
-                // retry job
-                //$this->release(300);
-                //$this->delay = 300;not work too
-                //$this->delay(180);not work fuck laravel 5
-                $this->release(60);
+                Log::debug("GoogleSlow check payment exception." . $e->getMessage());
+                $this->release();
             }
-            if (empty($receipt) || $receipt->getPurchaseState()->isCancelled())
-            {
-                // job exit
-            }
-        }, function () {
-            $this->release(180);
-        });
+        //}, function () {
+        //    $this->release(180);
+        //});
     }
 }
