@@ -48,13 +48,17 @@ class GoogleSlowCard implements ShouldQueue
                     $orderDetail['server'],
                     $orderDetail['item'],
                     $orderDetail['role']);
-                if (!$result) $this->release(120);
+                //if (!$result) $this->release(120);//not work?
+                $this->delay = 120;
+                $this->release();
                 // job done
             }
             if (!empty($receipt) && $receipt->getPurchaseState()->isPending())
             {
                 // retry job
-                $this->release(300);
+                //$this->release(300);
+                $this->delay = 300;
+                $this->release();
             }
             if (empty($receipt) || $receipt->getPurchaseState()->isCancelled())
             {
