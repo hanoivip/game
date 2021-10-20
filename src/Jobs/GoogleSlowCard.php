@@ -12,6 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Imdhemy\Purchases\Facades\Product;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class GoogleSlowCard implements ShouldQueue
 {
@@ -25,7 +26,9 @@ class GoogleSlowCard implements ShouldQueue
     
     private $order;
     
-    public $retryAfter = 180;
+    // laravel 5, can not be dynamic
+    //MaxAttemptsExceededException???
+    //public $retryAfter = 180;
     
     public function __construct($order, $productId, $token)
     {
@@ -57,7 +60,8 @@ class GoogleSlowCard implements ShouldQueue
                     //if (!$result) $this->release(120);//not work?
                     //$this->delay = 120; not work too, fuck laravel 5
                     //$this->delay(120);not work? fuck laravel 5
-                    $this->release();
+                    //$this->release();MaxAttemptsExceededException
+                    $this->delay(120);//again?
                     // job done
                 }
                 if (!empty($receipt) && $receipt->getPurchaseState()->isPending())
@@ -66,7 +70,7 @@ class GoogleSlowCard implements ShouldQueue
                     //$this->release(300);
                     //$this->delay = 300;not work too
                     //$this->delay(180);not work fuck laravel 5
-                    $this->release();
+                    $this->release(180);
                 }
                 if (empty($receipt) || $receipt->getPurchaseState()->isCancelled())
                 {
@@ -76,10 +80,10 @@ class GoogleSlowCard implements ShouldQueue
             catch (Exception $e) 
             {
                 Log::debug("GoogleSlow check payment exception." . $e->getMessage());
-                $this->release();
+                $this->release(1500);
             }
         //}, function () {
-        //    $this->release(180);
+        //    $this->release();
         //});
     }
 }
