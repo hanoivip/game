@@ -20,6 +20,11 @@ Route::middleware('web', 'auth:web')->namespace('Hanoivip\Game\Controllers')->gr
     Route::any('/newrecharge/done', 'NewFlow@rechargeDone')->name('newrecharge.done');
     Route::any('/newrecharge/refresh', 'NewFlow@query')->name('newrecharge.refresh');
     Route::get('/newhistory', 'NewFlow@history')->name('newhistory');
+    // temporary, ops supports
+    Route::get('/google/recall', 'GoogleController@recallUI');
+    Route::post('/google/recall', 'GoogleController@recall')->name('google.recall');
+    Route::get('/google/token', 'GoogleController@tokenUI');
+    Route::post('/google/token', 'GoogleController@token')->name('google.detail');
 });
 
 Route::middleware([

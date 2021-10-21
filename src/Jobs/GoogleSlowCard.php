@@ -13,6 +13,7 @@ use Imdhemy\Purchases\Facades\Product;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Hanoivip\Game\GoogleReceipt;
 
 class GoogleSlowCard implements ShouldQueue
 {
@@ -44,8 +45,7 @@ class GoogleSlowCard implements ShouldQueue
      */
     public function handle()
     {
-        //Redis::funnel('GoogleSlow@' . $this->order)->limit(1)->then(function () {
-        //Redis::throttle('GoogleSlow@' . $this->order)->block(0)->allow(1)->every(180)->then(function () {
+        Redis::funnel('GoogleSlow@' . $this->order)->limit(1)->then(function () {
             try 
             {
                 $receipt = Product::googlePlay()->id($this->productId)->token($this->token)->get();
@@ -57,11 +57,14 @@ class GoogleSlowCard implements ShouldQueue
                         $orderDetail['server'],
                         $orderDetail['item'],
                         $orderDetail['role']);
+                    $log = GoogleReceipt::where('purchase_token', $token)->first();
+                    $log->state = $result ? 1 : 2;
+                    $log->save();
                     //if (!$result) $this->release(120);//not work?
                     //$this->delay = 120; not work too, fuck laravel 5
                     //$this->delay(120);not work? fuck laravel 5
                     //$this->release();MaxAttemptsExceededException
-                    $this->delay(120);//again?
+                    if (!$result) $this->release(120);//again?
                     // job done
                 }
                 if (!empty($receipt) && $receipt->getPurchaseState()->isPending())
@@ -82,8 +85,6 @@ class GoogleSlowCard implements ShouldQueue
                 Log::debug("GoogleSlow check payment exception." . $e->getMessage());
                 $this->release(1500);
             }
-        //}, function () {
-        //    $this->release();
-        //});
+        });
     }
 }

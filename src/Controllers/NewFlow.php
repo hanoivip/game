@@ -15,6 +15,7 @@ use Hanoivip\Game\Facades\GameHelper;
 use Hanoivip\Game\Services\RechargeService;
 use Hanoivip\Game\Jobs\GoogleSlowCard;
 use Hanoivip\Game\Jobs\CheckPendingReceipt;
+use Hanoivip\Game\GoogleReceipt;
 
 class NewFlow extends Controller
 {   
@@ -264,6 +265,16 @@ class NewFlow extends Controller
         $token = $receiptCli['purchaseToken'];
         try
         {
+            $oldLog = GoogleReceipt::where('purchase_token', $token)->get();
+            if ($oldLog->isNotEmpty())
+            {
+                return ['error' => 2, 'message' => 'Duplicated callback', 'data' => []];
+            }
+            // TODO: temporary fixes
+            $log = new GoogleReceipt();
+            $log->product_id = $productId;
+            $log->purchase_token = $token;
+            $log->save();
             // validate this payments
             $receipt = Product::googlePlay()->id($productId)->token($token)->get();
             if (!empty($receipt) && $receipt->getPurchaseState()->isPending())
@@ -276,10 +287,12 @@ class NewFlow extends Controller
             {
                 Log::debug(">> valid payment..");
                 $orderDetail = IapFacade::detail($order);
-                GameHelper::recharge($orderDetail['user'],
+                $result = GameHelper::recharge($orderDetail['user'],
                     $orderDetail['server'],
                     $orderDetail['item'],
                     $orderDetail['role']);
+                $log->state = $result ? 1 : 2;
+                $log->save();
                 return ['error' => 0, 'message' => 'Success.', 'data' => []];
             }
             return ['error' => 2, 'message' => 'Invalid payment', 'data' => []];
