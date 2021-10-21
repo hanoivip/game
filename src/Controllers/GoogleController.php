@@ -20,7 +20,7 @@ class GoogleController extends Controller
     public function recallUI(Request $request)
     {
         $servers = ServerFacade::getUserServer();
-        return view('google-recall', ['servers' => $servers]);
+        return view('hanoivip::google-recall', ['servers' => $servers]);
     }
 
     public function recall(Request $request)
@@ -78,13 +78,14 @@ class GoogleController extends Controller
         }
         catch (Exception $ex)
         {
+            Log::error("GoogleRecall exception: " . $ex->getMessage());
             return view('google-recall-result', ['message' => 'Invalid product id and/or purchase token']);
         }
     }
     
     public function tokenUI(Request $request)
     {
-        return view('google-token');
+        return view('hanoivip::google-token');
     }
     
     public function token(Request $request)
