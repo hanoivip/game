@@ -7,6 +7,7 @@ use Hanoivip\Game\Services\RechargeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Hanoivip\Game\RechargeLog;
 
 class Admin extends Controller
 {   
@@ -15,6 +16,10 @@ class Admin extends Controller
     public function __construct(RechargeService $recharge)
     {
         $this->rechargeService = $recharge;
+    }
+    public function index()
+    {
+        return view('hanoivip::admin.newrecharge');
     }
     /**
      * List all purchases
@@ -43,6 +48,56 @@ class Admin extends Controller
             Log::error("Admin query trans exception: " . $ex->getMessage());
             return view('hanoivip::admin.newrecharge-failure', ['message' => __('hanoivip::newrecharge.query-error')]);
         }
+    }
+    
+    public function viewReceipt(Request $request)
+    {
+        $receipt = null;
+        if ($request->has('receipt'))
+        {
+            $receipt = $request->input('receipt');
+        }
+        $detail = null;
+        $message = null;
+        if (!empty($receipt))
+        {
+            $detail = $this->rechargeService->queryReceipt($receipt);
+        }
+        return view('hanoivip::admin.newrecharge-receipt', ['detail' => $detail, 'receipt' => $receipt]);
+    }
+    
+    public function checkReceipt(Request $request)
+    {
+        
+    }
+    
+    public function today()
+    {
+        $startTime = date('Y-m-d H:i:s', strtotime('today midnight'));
+        $endTime = date('Y-m-d H:i:s', strtotime('tomorrow'));
+        $sum = $this->rechargeService->sumAmount($startTime, $endTime);
+        return view('hanoivip::admin.newrecharge-income-result', ['sum' => $sum]);
+    }
+    
+    public function thisMonth()
+    {
+        $startTime = date('Y-m-d H:i:s', strtotime('first day of this month midnight'));
+        $endTime = date('Y-m-d H:i:s', strtotime('first day of next month midnight'));
+        $sum = $this->rechargeService->sumAmount($startTime, $endTime);
+        return view('hanoivip::admin.newrecharge-income-result', ['sum' => $sum]);
+    }
+    
+    public function statByTime(Request $request)
+    {
+        $startTime = $request->get('start_time') . ' 00:00:00';
+        $endTime = $request->get('end_time') . ' 23:59:59';
+        $sum = $this->rechargeService->sumAmount($startTime, $endTime);
+        return view('hanoivip::admin.newrecharge-income-result', ['sum' => $sum]);
+    }
+    
+    public function stats()
+    {
+        return view('hanoivip::admin.newrecharge-income');
     }
     
 }

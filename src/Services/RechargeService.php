@@ -24,6 +24,19 @@ class RechargeService
         }
         return __('hanoivip::newrecharge.receipt-not-exists');
     }
+    
+    public function queryReceipt($trans)
+    {
+        $log = RechargeLog::where('receipt', $trans)->first();
+        if (!empty($log))
+        {
+            if ($log->status == 5)
+                return __('hanoivip::newrecharge.not-enough-money');
+                return PaymentFacade::query($trans);
+        }
+        return __('hanoivip::newrecharge.receipt-not-exists');
+    }
+    
     /**
      * Thread safe
      */
@@ -109,5 +122,13 @@ class RechargeService
         ->get();
         $count = RechargeLog::where('user_id', $userId)->count();
         return [$list, ceil($count / 10)];
+    }
+    
+    public function sumAmount($startTime, $endTime)
+    {
+        return RechargeLog::where('created_at', '>=', $startTime)
+        ->where('created_at', '<', $endTime)
+        //->where()
+        ->sum('amount');
     }
 }

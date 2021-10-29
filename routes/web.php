@@ -33,6 +33,16 @@ Route::middleware([
 ])->namespace('Hanoivip\Game\Controllers')
 ->prefix('ecmin')
 ->group(function () {
+    // Module index
+    Route::get('/newrecharge', 'Admin@index')->name('ecmin.newrecharge');
     // New flow history
     Route::post('/newrecharge/history', 'Admin@history')->name('ecmin.newrecharge.history');
+    // Stats
+    Route::get('/newrecharge/stat', 'Admin@stats')->name('ecmin.newrecharge.stats');
+    Route::post('/newrecharge/stat/today', 'Admin@today')->name('ecmin.newrecharge.statsToday');
+    Route::post('/newrecharge/stat/month', 'Admin@thisMonth')->name('ecmin.newrecharge.statsMonth');
+    Route::post('/newrecharge/stat', 'Admin@statByTime')->name('ecmin.newrecharge.statsByTime');
+    // Search
+    Route::any('/newrecharge/receipt', 'Admin@viewReceipt')->name('ecmin.newrecharge.receipt');
+    //Route::post('/newrecharge/receipt/check', 'Admin@checkReceipt')->name('ecmin.newrecharge.receipt.check');
 });
