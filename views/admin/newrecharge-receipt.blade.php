@@ -19,7 +19,7 @@
     	@if ($detail->isPending())
     		<p>Thanh toán trễ,đợi thêm</p>
     	@elseif ($detail->isFailure())
-    		<p>Thanh toán thất bại</p>
+    		<p>Thanh toán thất bại. Chi tiết {{$detail->getDetail()}}</p>
 		@else
 			<p>Thanh toán thành công</p>
     	@endif
