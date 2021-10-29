@@ -9,7 +9,7 @@
 {{ csrf_field() }}
 <input type="hidden" id="svname" name="svname" value="{{$svname}}"/>
 <input type="hidden" id="role" name="role" value="{{$role}}"/>
-<select id="item" name="item">
+Chọn gói nạp:<select id="item" name="item">
 	@foreach ($items as $item)
 		<option value="{{$item->merchant_id}}">
 			{{$item->merchant_title}}
