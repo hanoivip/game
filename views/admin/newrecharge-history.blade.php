@@ -12,6 +12,7 @@
         <th>T.thái thanh toán</th>
         <th>Giá trị</th>
         <th>T.thái nhân vật</th>
+        <th>Ngày tháng</th>
     </tr>
 	@foreach ($history as $his)
 	<tr>
@@ -20,6 +21,7 @@
 		<td>{{__('hanoivip::newrecharge.history.status.' . $his->status)}}</td>
 		<td>{{$his->amount}}</td>
 		<td>{{__('hanoivip::newrecharge.history.game_status.' . $his->game_status)}}</td>
+		<td>{{$his->created_at}}</td>
 	</tr>
 	@endforeach
 </table>

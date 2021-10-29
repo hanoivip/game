@@ -41,7 +41,7 @@ Route::middleware([
     Route::get('/newrecharge/stat', 'Admin@stats')->name('ecmin.newrecharge.stats');
     Route::any('/newrecharge/stat/today', 'Admin@today')->name('ecmin.newrecharge.statsToday');
     Route::any('/newrecharge/stat/month', 'Admin@thisMonth')->name('ecmin.newrecharge.statsMonth');
-    Route::any('/newrecharge/stat', 'Admin@statByTime')->name('ecmin.newrecharge.statsByTime');
+    Route::post('/newrecharge/stat', 'Admin@statByTime')->name('ecmin.newrecharge.statsByTime');
     // Search
     Route::any('/newrecharge/receipt', 'Admin@viewReceipt')->name('ecmin.newrecharge.receipt');
     //Route::post('/newrecharge/receipt/check', 'Admin@checkReceipt')->name('ecmin.newrecharge.receipt.check');
