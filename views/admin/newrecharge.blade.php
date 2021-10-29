@@ -4,8 +4,8 @@
 
 @section('content')
 
-<a src="{{route('ecmin.newrecharge.receipt')}}">Tìm kiếm hoá đơn</a>
-
-<a src="{{route('ecmin.newrecharge.stats')}}">Thống kê doanh số</a>
+<a href="{{route('ecmin.newrecharge.receipt')}}">Tìm kiếm hoá đơn</a>
+<br/>
+<a href="{{route('ecmin.newrecharge.stats')}}">Thống kê doanh số</a>
 
 @endsection
