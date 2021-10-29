@@ -69,8 +69,11 @@ class Admin extends Controller
         }
         return view('hanoivip::admin.newrecharge-receipt', ['detail' => $detail, 'receipt' => $receipt, 'trans' => $trans]);
     }
-    
-    public function checkReceipt(Request $request)
+    /**
+     * Retry game exchange
+     * @param Request $request
+     */
+    public function retry(Request $request)
     {
         
     }

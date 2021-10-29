@@ -28,6 +28,9 @@
 	<a href="{{route('newhistory', ['page' => $page])}}">{{$page}}</a>
 @endfor
 
+<br/><br/>
+<a class="btn btn-primary" href="{{route('newhistory')}}"><button>Cập nhật</button></a>
+
 @else
 	<p>{{__('hanoivip::newrecharge.history.empty')}}</p>
 @endif

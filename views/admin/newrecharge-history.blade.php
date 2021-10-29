@@ -13,6 +13,7 @@
         <th>Giá trị</th>
         <th>T.thái nhân vật</th>
         <th>Ngày tháng</th>
+        <th>Thao tác</th>
     </tr>
 	@foreach ($history as $his)
 	<tr>
@@ -22,6 +23,12 @@
 		<td>{{$his->amount}}</td>
 		<td>{{__('hanoivip::newrecharge.history.game_status.' . $his->game_status)}}</td>
 		<td>{{$his->created_at}}</td>
+		<td>
+			<form method="post" action="{{route('')}}">
+			</form>
+			<form method="post" action="{{route('')}}">
+			</form>
+		</td>
 	</tr>
 	@endforeach
 </table>

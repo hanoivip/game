@@ -44,5 +44,6 @@ Route::middleware([
     Route::post('/newrecharge/stat', 'Admin@statByTime')->name('ecmin.newrecharge.statsByTime');
     // Search
     Route::any('/newrecharge/receipt', 'Admin@viewReceipt')->name('ecmin.newrecharge.receipt');
-    //Route::post('/newrecharge/receipt/check', 'Admin@checkReceipt')->name('ecmin.newrecharge.receipt.check');
+    // Confirm need to retry: pay, game..
+    Route::post('/newrecharge/receipt/retry', 'Admin@retry')->name('ecmin.newrecharge.receipt.retry');
 });
