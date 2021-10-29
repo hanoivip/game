@@ -32,7 +32,7 @@ class RechargeService
         {
             if ($log->status == 5)
                 return __('hanoivip::newrecharge.not-enough-money');
-                return PaymentFacade::query($trans);
+            return PaymentFacade::query($trans);
         }
         return __('hanoivip::newrecharge.receipt-not-exists');
     }

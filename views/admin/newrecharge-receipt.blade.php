@@ -26,4 +26,10 @@
     @endif
 @endif
 
+@if (!empty($trans))
+<p>Chi tiết thanh toán</p>
+<p>Hình thức: {{$trans->method}}</p>
+<p>Đơn hàng: {{$trans->order}}</p>
+@endif
+
 @endsection

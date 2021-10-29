@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\Game\RechargeLog;
+use Hanoivip\PaymentContract\Facades\PaymentFacade;
+use Hanoivip\Payment\Models\Transaction;
 
 class Admin extends Controller
 {   
@@ -59,11 +61,13 @@ class Admin extends Controller
         }
         $detail = null;
         $message = null;
+        $trans = null;
         if (!empty($receipt))
         {
-            $detail = $this->rechargeService->queryReceipt($receipt);
+            $detail = PaymentFacade::query($receipt);
+            $trans = Transaction::where('trans_id', $receipt)->first();
         }
-        return view('hanoivip::admin.newrecharge-receipt', ['detail' => $detail, 'receipt' => $receipt]);
+        return view('hanoivip::admin.newrecharge-receipt', ['detail' => $detail, 'receipt' => $receipt, 'trans' => $trans]);
     }
     
     public function checkReceipt(Request $request)
