@@ -10,6 +10,7 @@ use Exception;
 use Hanoivip\Game\RechargeLog;
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
 use Hanoivip\Payment\Models\Transaction;
+use Hanoivip\IapContract\Facades\IapFacade;
 
 class Admin extends Controller
 {   
@@ -70,12 +71,88 @@ class Admin extends Controller
         return view('hanoivip::admin.newrecharge-receipt', ['detail' => $detail, 'receipt' => $receipt, 'trans' => $trans]);
     }
     /**
-     * Retry game exchange
+     * Trigger a receipt callback
      * @param Request $request
      */
     public function retry(Request $request)
     {
-        
+        $receipt = $request->input('receipt');
+        $transaction = Transaction::where('trans_id', $receipt)->first();
+        if (empty($transaction))
+        {
+            return view('hanoivip::admin.newrecharge-receipt-retrigger', ['message' => 'Receipt not found']);
+        }
+        $order = $transaction->order;
+        $orderDetail = IapFacade::detail($order);
+        if (empty($orderDetail))
+        {
+            return view('hanoivip::admin.newrecharge-receipt-retrigger', ['message' => 'Order not found']);
+        }
+        try
+        {
+            $result = $this->rechargeService->onPaymentCallback($orderDetail['user'], $order, $receipt);
+            if (gettype($result) == 'string')
+            {
+                if ($request->ajax())
+                {
+                    return ['error' => 1, 'message' => $result, 'data' => []];
+                }
+                else
+                {
+                    return view('hanoivip::admin.newrecharge-receipt-retrigger', ['message' => $result]);
+                }
+            }
+            else
+            {
+                /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
+                if ($result->isPending())
+                {
+                    dispatch(new CheckPendingReceipt($orderDetail['user'], $order, $receipt))->delay(60);
+                    if ($request->ajax())
+                    {
+                        return ['error' => 0, 'message' => 'pending', 'data' => ['trans' => $receipt]];
+                    }
+                    else
+                    {
+                        return view('hanoivip::admin.newrecharge-receipt-retrigger', ['message' => 'Payment still pending..just wait..']);
+                    }
+                }
+                elseif ($result->isFailure())
+                {
+                    if ($request->ajax())
+                    {
+                        return ['error' => 2, 'message' => $result->getDetail(), 'data' => []];
+                    }
+                    else
+                    {
+                        return view('hanoivip::admin.newrecharge-receipt-retrigger', ['message' => $result->getDetail()]);
+                    }
+                }
+                else
+                {
+                    if ($request->ajax())
+                    {
+                        return ['error' => 0, 'message' => 'success', 'data' => []];
+                    }
+                    else
+                    {
+                        return view('hanoivip::admin.newrecharge-receipt-retrigger', ['message' => 'Success']);
+                    }
+                }
+            }
+        }
+        catch (Exception $ex)
+        {
+            Log::error("NewFlow recharge callback exception: " . $ex->getMessage() . $ex->getTraceAsString());
+            if ($request->ajax())
+            {
+                return ['error' => 3, 'message' => __('hanoivip::newrecharge.callback-error'), 'data' => []];
+            }
+            else
+            {
+                return view('hanoivip::admin.newrecharge-receipt-retrigger', ['message' => __('hanoivip::newrecharge.callback-error')]);
+            }
+        }
     }
     
     public function today()

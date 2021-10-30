@@ -32,4 +32,12 @@
 <p>Đơn hàng: {{$trans->order}}</p>
 @endif
 
+@if (!empty($receipt))
+<form method="post" action="{{route('ecmin.newrecharge.receipt.retry')}}">
+	{{csrf_field()}}
+	<input type="hidden" name="receipt" id="receipt" value="{{$receipt}}"/>
+	<button type="submit">Trigger</button>
+</form>
+@endif
+
 @endsection

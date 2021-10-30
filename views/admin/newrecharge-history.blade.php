@@ -24,9 +24,10 @@
 		<td>{{__('hanoivip::newrecharge.history.game_status.' . $his->game_status)}}</td>
 		<td>{{$his->created_at}}</td>
 		<td>
-			<form method="post" action="{{route('')}}">
-			</form>
-			<form method="post" action="{{route('')}}">
+			<form method="post" action="{{route('ecmin.newrecharge.receipt')}}">
+				{{csrf_field()}}
+				<input type="hidden" name="receipt" id="receipt" value="{{$his->receipt}}"/>
+				<button type="submit">Detail</button>
 			</form>
 		</td>
 	</tr>
