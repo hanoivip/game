@@ -57,7 +57,7 @@ class GoogleSlowCard implements ShouldQueue
                         $orderDetail['server'],
                         $orderDetail['item'],
                         $orderDetail['role']);
-                    $log = GoogleReceipt::where('purchase_token', $token)->first();
+                    $log = GoogleReceipt::where('purchase_token', $this->token)->first();
                     $log->state = $result ? 1 : 2;
                     $log->save();
                     //if (!$result) $this->release(120);//not work?
