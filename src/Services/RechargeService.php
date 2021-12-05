@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Hanoivip\Payment\Facades\BalanceFacade;
 use Hanoivip\Game\RechargeLog;
 use Hanoivip\Game\Jobs\SendCoin;
+use Hanoivip\Events\Gate\UserTopup;
 
 class RechargeService
 {   
@@ -95,6 +96,8 @@ class RechargeService
                     BalanceFacade::add($userId, $amount, "PaymentRefund:" . $order);
                 }
                 $log->amount = $amount;
+                // notice 
+                event(new UserTopup($userId, 0, $amount, $receipt));
             }
             else
             {
