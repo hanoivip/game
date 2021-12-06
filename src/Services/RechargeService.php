@@ -97,7 +97,7 @@ class RechargeService
                 }
                 $log->amount = $amount;
                 // notice 
-                //event(new UserTopup($userId, 0, $amount, $receipt));
+                event(new UserTopup($userId, 0, $amount, $receipt));
             }
             else
             {
