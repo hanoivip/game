@@ -96,6 +96,7 @@ class GameService
      * @param string $item Recharge package code
      * @param array $params
      * @param UserVO $receiver
+     * @return true|string true if success or string error detail
      */
     public function recharge($serverName, $user, $item, $params, $receiver = null)
     {
