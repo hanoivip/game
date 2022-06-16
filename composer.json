@@ -20,7 +20,8 @@
 	"extra" : {
 		"laravel" : {
 			"providers" : [
-				"Hanoivip\\Game\\LibServiceProvider"
+				"Hanoivip\\Game\\LibServiceProvider",
+				"Hanoivip\\Game\\EventServiceProvider"
 			]
 		}
 	}
