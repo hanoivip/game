@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Hanoivip\Game\RechargeLog;
+use Hanoivip\Events\Game\UserBuyItem;
 
 //Setup 1 supervisor worker!!!
 class SendCoin implements ShouldQueue
@@ -45,6 +46,11 @@ class SendCoin implements ShouldQueue
             $log = RechargeLog::find($this->logId);
             if ($result === true)
             {
+                event(new UserBuyItem(
+                    $this->orderDetail['user'],
+                    $this->orderDetail['server'],
+                    $this->orderDetail['item'],
+                    $this->orderDetail['role']));
                 $log->game_status = 1;
                 $log->save();
             }
