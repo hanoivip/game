@@ -6,6 +6,7 @@ Route::middleware('web', 'auth:web')->namespace('Hanoivip\Game\Controllers')->gr
     Route::get('/server-list', 'GameController@serverlist')->name('server-list');
     Route::get('/quick-play', 'GameController@quickplay');
     Route::get('/play/svname/{svname}', 'GameController@play')->name('play');
+    // Flow 1: topup indirect, then buying item
     Route::get('/recharge', 'GameController@recharge')->name('recharge');
     Route::post('/recharge/result', 'GameController@doRecharge')->name('doRecharge');
     Route::get('/recharge/result-success', 'GameController@onRechargeSuccess')->name('recharge.success');
@@ -13,7 +14,7 @@ Route::middleware('web', 'auth:web')->namespace('Hanoivip\Game\Controllers')->gr
     Route::get('/recharge/role', 'GameController@queryRoles')->name('recharge.role');
     // server role wizard
     Route::get('/wizard/role', 'WizardController@chooseRole')->name('wizard.role');
-    // recharge new flow
+    // Flow 2: topup direct, know what user will buy
     Route::get('/newrecharge', 'NewFlow@startWizard')->name('newrecharge');
     Route::get('/newrecharge/shop', 'NewFlow@showShop')->name('newrecharge.shop');
     Route::any('/newrecharge/do', 'NewFlow@recharge')->name('newrecharge.do');

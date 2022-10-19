@@ -1,4 +1,4 @@
-@extends('hanoivip::layouts.web')
+@extends('hanoivip::layouts.app')
 
 @section('title', 'Mua vàng trong game.')
 
@@ -17,7 +17,6 @@
 
 <form method="post" action="{{ route('doRecharge') }}">
 {{ csrf_field() }}
-<input type="hidden" name="tid" value="{{$tid}}"/>
 	<p>Chọn máy chủ:</p>
 	<select id="svname" name="svname"
 		onchange="document.location.href='{{ route('recharge.role') }}?svname=' + this.value">

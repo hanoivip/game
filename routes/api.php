@@ -14,8 +14,7 @@ Route::middleware([
     Route::any('/game/recharge', 'GameController@doRecharge');
     Route::any('/user/all-role', 'GameController@allRoles');
     // payment callback
-    Route::any('/game/payment-callback', 'NewFlow@rechargeDone');
-    Route::any('/purchase/callback', 'NewFlow@rechargeDone');//apk
+    Route::any('/purchase/callback', 'NewFlow@rechargeDone');
     // payment history
     Route::any('/payment/history', 'NewFlow@history');
 });
