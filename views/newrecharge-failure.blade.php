@@ -1,6 +1,6 @@
 @extends('hanoivip::layouts.app')
 
-@section('title', 'Mua vàng trong game.')
+@section('title', 'Payment failure')
 
 @section('content')
 

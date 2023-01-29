@@ -123,11 +123,11 @@ class NewFlow extends Controller
                     dispatch(new CheckPendingReceipt(Auth::user()->getAuthIdentifier(), $order, $receipt))->delay(60);
                     if ($request->ajax())
                     {
-                        return ['error' => 0, 'message' => 'pending', 'data' => ['trans' => $receipt]];
+                        return ['error' => 0, 'message' => 'pending', 'data' => ['trans' => $receipt, 'detail' => $result->getDetail()]];
                     }
                     else
                     {
-                        return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt]);
+                        return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt, 'detail' => $result->getDetail()]);
                     }
                 }
                 elseif ($result->isFailure())
@@ -183,7 +183,7 @@ class NewFlow extends Controller
                 /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
                 if ($result->isPending())
                 {
-                    return view('hanoivip::newrecharge-result-pending', ['trans' => $trans]);
+                    return view('hanoivip::newrecharge-result-pending', ['trans' => $trans, 'detail' => $result->getDetail()]);
                 }
                 elseif ($result->isFailure())
                 {
