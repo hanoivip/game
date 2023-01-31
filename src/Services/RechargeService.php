@@ -69,7 +69,7 @@ class RechargeService
         {
             $log->status = 2;
         }
-        else
+        elseif ($result->isSuccess())
         {
             if ($log->status < 3)
             {
@@ -103,6 +103,10 @@ class RechargeService
             {
                 // already process
             }
+        }
+        else
+        {
+            Log::error("Recharge trans result could not determine. Bug in logic..");
         }
         $log->save();
         $lock->release();
