@@ -50,7 +50,7 @@ class Admin extends Controller
         catch (Exception $ex)
         {
             Log::error("Admin query trans exception: " . $ex->getMessage());
-            return view('hanoivip::admin.newrecharge-failure', ['message' => __('hanoivip::newrecharge.query-error')]);
+            return view('hanoivip::admin.newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.query-error')]);
         }
     }
     
@@ -147,11 +147,11 @@ class Admin extends Controller
             Log::error("NewFlow recharge callback exception: " . $ex->getMessage() . $ex->getTraceAsString());
             if ($request->ajax())
             {
-                return ['error' => 3, 'message' => __('hanoivip::newrecharge.callback-error'), 'data' => []];
+                return ['error' => 3, 'message' => __('hanoivip.game::newrecharge.callback-error'), 'data' => []];
             }
             else
             {
-                return view('hanoivip::admin.newrecharge-receipt-retrigger', ['message' => __('hanoivip::newrecharge.callback-error')]);
+                return view('hanoivip::admin.newrecharge-receipt-retrigger', ['message' => __('hanoivip.game::newrecharge.callback-error')]);
             }
         }
     }

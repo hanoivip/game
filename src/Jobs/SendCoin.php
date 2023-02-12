@@ -28,7 +28,7 @@ class SendCoin implements ShouldQueue
      */
     private $logId;
     
-    public $tries = 5;
+    public $tries = 5;//
     
     public function __construct($orderDetail, $logId)
     {

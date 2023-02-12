@@ -20,10 +20,10 @@ class RechargeService
         if (!empty($log))
         {
             if ($log->status == 5)
-                return __('hanoivip::newrecharge.not-enough-money');
+                return __('hanoivip.game::newrecharge.not-enough-money');
             return PaymentFacade::query($trans);
         }
-        return __('hanoivip::newrecharge.receipt-not-exists');
+        return __('hanoivip.game::newrecharge.receipt-not-exists');
     }
     
     public function queryReceipt($trans)
@@ -32,10 +32,10 @@ class RechargeService
         if (!empty($log))
         {
             if ($log->status == 5)
-                return __('hanoivip::newrecharge.not-enough-money');
+                return __('hanoivip.game::newrecharge.not-enough-money');
             return PaymentFacade::query($trans);
         }
-        return __('hanoivip::newrecharge.receipt-not-exists');
+        return __('hanoivip.game::newrecharge.receipt-not-exists');
     }
     
     /**
@@ -45,7 +45,7 @@ class RechargeService
     {
         $lock = Cache::lock('PaymentCallback@' . $userId, 10);
         if (!$lock->get())
-            return __('hanoivip::newrecharge.callback-in-progress');
+            return __('hanoivip.game::newrecharge.callback-in-progress');
         $result = PaymentFacade::query($receipt);
         $log = RechargeLog::where('user_id', $userId)
         ->where('order', $order)
@@ -111,7 +111,7 @@ class RechargeService
         $log->save();
         $lock->release();
         if ($log->status == 5)
-            return __('hanoivip::newrecharge.not-enough-money');
+            return __('hanoivip.game::newrecharge.not-enough-money');
         return $result;
     }
     /**

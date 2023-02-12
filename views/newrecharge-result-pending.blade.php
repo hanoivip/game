@@ -4,7 +4,7 @@
 
 @section('content')
 
-<p>{{__('hanoivip::newrecharge.pending')}}</p>
+<p>{{__('hanoivip.game::newrecharge.pending')}}</p>
 
 <a href="{{ route('newrecharge.refresh', ['trans' => $trans]) }}"><button>Cập nhật</button></a>
 

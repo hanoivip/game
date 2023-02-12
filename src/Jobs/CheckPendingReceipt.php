@@ -16,7 +16,7 @@ class CheckPendingReceipt implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     
-    public $tries = 15;
+    public $tries = 15;//15 min
 
     private $order;
     

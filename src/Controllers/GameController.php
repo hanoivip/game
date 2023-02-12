@@ -167,7 +167,7 @@ class GameController extends Controller
 	    if (!BalanceFacade::enough($uid, $coin, $cointype))
 	    {
 	        Log::error("Game user not enough coin");
-	        return __('hanoivip::game.recharge-fail.not-enough-coin');
+	        return __('hanoivip.game::game.recharge-fail.not-enough-coin');
 	    }
 	    $result = $this->games->recharge($svname, $user, $package, $params);
 	    if ($result === true)
@@ -176,7 +176,7 @@ class GameController extends Controller
     	    if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
     	    {
     	        Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
-    	        return __('hanoivip::game.recharge-fail.remove-coin-fail');
+    	        return __('hanoivip.game::game.recharge-fail.remove-coin-fail');
     	    }
 	    }
 	    return $result;
@@ -210,9 +210,9 @@ class GameController extends Controller
 	        if (!$lock->get())
 	        {
 	            if ($request->expectsJson())
-	                return ['error' => 1, 'message' => __('hanoivip::recharge.too-fast')]; 
+	                return ['error' => 1, 'message' => __('hanoivip.game::recharge.too-fast')]; 
 	            else
-	               return view('hanoivip::recharge-result', ['error_message' => __('hanoivip::recharge.too-fast')]);
+	               return view('hanoivip::recharge-result', ['error_message' => __('hanoivip.game::recharge.too-fast')]);
 	        }
 	        // Check enough
 	        
@@ -222,7 +222,7 @@ class GameController extends Controller
     	    {
     	        if ($request->expectsJson())
     	        {
-    	            return ['error' => 0, 'message' => __('hanoivip::recharge.success')]; 
+    	            return ['error' => 0, 'message' => __('hanoivip.game::recharge.success')]; 
     	        }
     	        else
     	        {
@@ -246,11 +246,11 @@ class GameController extends Controller
 	        Log::error("Game recharge exception:" . $ex->getMessage());
 	        if ($request->expectsJson())
 	        {
-	            return ['error' => 1, 'message' => __('hanoivip::recharge.exception')];
+	            return ['error' => 1, 'message' => __('hanoivip.game::recharge.exception')];
 	        }
 	        else
 	        {
-	            return response()->redirectToRoute('recharge.fail', ['error_message' => __('hanoivip::recharge.exception')]);
+	            return response()->redirectToRoute('recharge.fail', ['error_message' => __('hanoivip.game::recharge.exception')]);
 	        }
 	    }
 	}
@@ -262,7 +262,7 @@ class GameController extends Controller
 	
 	public function onRechargeFail(Request $request)
 	{
-	    $message = __('hanoivip::recharge.fail');
+	    $message = __('hanoivip.game::recharge.fail');
 	    if ($request->has('error_message'))
 	        $message = $request->input('error_message');
 	    return view('hanoivip::recharge-result-fail', ['error_message' => $message]);

@@ -27,22 +27,27 @@ class NewFlow extends Controller
     
     public function startWizard(Request $request)
     {
+        if ($request->has('client'))
+        {
+            session(['client' => $request->input('client')]);
+        }
         return redirect()->route('wizard.role', ['next' => 'newrecharge.shop']);
     }
     public function showShop(Request $request)
     {
         $svname=$request->input('svname');
         $role=$request->input('role');
+        $client=session()->get('client', 'app');
         try
         {
             // show items
-            $items = IapFacade::items();// or recharges ?
-            return view('hanoivip::newrecharge-shop', ['items' => $items, 'svname' => $svname, 'role' => $role]);
+            $items = IapFacade::items($client);// or recharges ?
+            return view('hanoivip::newrecharge-shop', ['items' => $items, 'svname' => $svname, 'role' => $role, 'client' => $client]);
         }
         catch (Exception $ex)
         {
             Log::error("NewFlow show shop error:" . $ex->getMessage());
-            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.shop-error')]);
+            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.shop-error')]);
         }
     }
     /**
@@ -59,12 +64,13 @@ class NewFlow extends Controller
         $svname=$request->input('svname');
         $role=$request->input('role');
         $item=$request->input('item');
+        $client=$request->input('client');
         try 
         {
             //Log::debug("Start new flow of recharging...");
-            $order = IapFacade::order(Auth::user(), $svname, $role, $item);
+            $order = IapFacade::order(Auth::user(), $svname, $role, $item, $client);
             //Log::debug("Create new order " . $order);
-            return PaymentFacade::pay($order, 'newrecharge.done');
+            return PaymentFacade::pay($order, 'newrecharge.done', $client);
         } 
         catch (Exception $ex) 
         {
@@ -159,11 +165,11 @@ class NewFlow extends Controller
             Log::error("NewFlow recharge callback exception: " . $ex->getMessage() . $ex->getTraceAsString());
             if ($request->ajax())
             {
-                return ['error' => 3, 'message' => __('hanoivip::newrecharge.callback-error'), 'data' => []];
+                return ['error' => 3, 'message' => __('hanoivip.game::newrecharge.callback-error'), 'data' => []];
             }
             else
             {
-                return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.callback-error')]);
+                return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.callback-error')]);
             }
         }
     }
@@ -198,7 +204,7 @@ class NewFlow extends Controller
         catch (Exception $ex)
         {
             Log::error("NewFlow query trans exception: " . $ex->getMessage());
-            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.query-error')]);
+            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.query-error')]);
         }
     }
     /**
@@ -225,7 +231,7 @@ class NewFlow extends Controller
         catch (Exception $ex)
         {
             Log::error("NewFlow query trans exception: " . $ex->getMessage());
-            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip::newrecharge.query-error')]);
+            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.query-error')]);
         }
     }
     

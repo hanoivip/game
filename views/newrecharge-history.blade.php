@@ -17,9 +17,9 @@
 	<tr>
 		<td>{{$his->order}}</td>
 		<td>{{$his->receipt}}</td>
-		<td>{{__('hanoivip::newrecharge.history.status.' . $his->status)}}</td>
+		<td>{{__('hanoivip.game::newrecharge.history.status.' . $his->status)}}</td>
 		<td>{{$his->amount}}</td>
-		<td>{{__('hanoivip::newrecharge.history.game_status.' . $his->game_status)}}</td>
+		<td>{{__('hanoivip.game::newrecharge.history.game_status.' . $his->game_status)}}</td>
 	</tr>
 	@endforeach
 </table>
@@ -32,7 +32,7 @@
 <a class="btn btn-primary" href="{{route('newhistory')}}"><button>Cập nhật</button></a>
 
 @else
-	<p>{{__('hanoivip::newrecharge.history.empty')}}</p>
+	<p>{{__('hanoivip.game::newrecharge.history.empty')}}</p>
 @endif
 
 @endsection

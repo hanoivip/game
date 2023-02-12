@@ -57,7 +57,8 @@ class ServerService
         $server->login_uri = $params['login_uri'];
         $server->recharge_uri = $params['recharge_uri'];
         $server->operate_uri = $params['operate_uri'];
-        $server->save();    
+        $server->save();
+        return $server;
     }
     
     public function removeByIdent($ident)
