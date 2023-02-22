@@ -78,7 +78,6 @@ class RechargeService
                 $orderDetail = IapFacade::detail($order);
                 $amount = intval($result->getAmount());
                 $price = intval($orderDetail['item_price']);
-                // how is about currency??
                 $currency = $orderDetail['item_currency'];
                 if ($amount >= $price)
                 {
@@ -87,14 +86,14 @@ class RechargeService
                     if (!empty($change))
                     {
                         Log::debug("RechargeService there was a change $change on $order");
-                        BalanceFacade::addCurrency($userId, $change, $currency, "PaymentChanges:" . $order);
+                        BalanceFacade::add($userId, $change, "PaymentChanges@" . $order);
                         $log->status = 4;
                     }
                 }
                 else
                 {
                     $log->status = 5;
-                    BalanceFacade::addCurrency($userId, $amount, $currency, "PaymentRefund:" . $order);
+                    BalanceFacade::add($userId, $amount, $currency, "PaymentRefund@" . $order);
                 }
                 $log->amount = $amount;
                 // notice 
