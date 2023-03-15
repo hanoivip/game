@@ -42,12 +42,12 @@ class NewFlow extends Controller
         {
             // show items
             $items = IapFacade::items($client);// or recharges ?
-            return view('hanoivip.game::newrecharge-shop', ['items' => $items, 'svname' => $svname, 'role' => $role, 'client' => $client]);
+            return view('hanoivip::newrecharge-shop', ['items' => $items, 'svname' => $svname, 'role' => $role, 'client' => $client]);
         }
         catch (Exception $ex)
         {
             Log::error("NewFlow show shop error:" . $ex->getMessage());
-            return view('hanoivip.game::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.shop-error')]);
+            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.shop-error')]);
         }
     }
     /**
@@ -75,7 +75,7 @@ class NewFlow extends Controller
         catch (Exception $ex) 
         {
             Log::error("NewFlow recharge exception: " . $ex->getMessage());
-            return view('hanoivip.game::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.recharge-error')]);
+            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.recharge-error')]);
         }
     }
     
@@ -119,7 +119,7 @@ class NewFlow extends Controller
                 }
                 else
                 {
-                    return view('hanoivip.game::newrecharge-failure', ['message' => $result]);
+                    return view('hanoivip::newrecharge-failure', ['message' => $result]);
                 }
             }
             else 
@@ -134,7 +134,7 @@ class NewFlow extends Controller
                     }
                     else
                     {
-                        return view('hanoivip.game::newrecharge-result-pending', ['trans' => $receipt, 'detail' => $result->getDetail()]);
+                        return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt, 'detail' => $result->getDetail()]);
                     }
                 }
                 elseif ($result->isFailure())
@@ -145,7 +145,7 @@ class NewFlow extends Controller
                     }
                     else
                     {
-                        return view('hanoivip.game::newrecharge-failure', ['message' => $result->getDetail()]);
+                        return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
                     }
                 }
                 else
@@ -156,7 +156,7 @@ class NewFlow extends Controller
                     }
                     else
                     {
-                        return view('hanoivip.game::newrecharge-result-success');
+                        return view('hanoivip::newrecharge-result-success');
                     }
                 }
             }
@@ -170,7 +170,7 @@ class NewFlow extends Controller
             }
             else
             {
-                return view('hanoivip.game::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.callback-error')]);
+                return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.callback-error')]);
             }
         }
     }
@@ -183,29 +183,29 @@ class NewFlow extends Controller
             $result = $this->rechargeService->query(Auth::user()->getAuthIdentifier(), $trans);
             if (gettype($result) == 'string')
             {
-                return view('hanoivip.game::newrecharge-failure', ['message' => $result]);
+                return view('hanoivip::newrecharge-failure', ['message' => $result]);
             }
             else 
             {
                 /** @var \Hanoivip\PaymentMethodContract\IPaymentResult $result */
                 if ($result->isPending())
                 {
-                    return view('hanoivip.game::newrecharge-result-pending', ['trans' => $trans, 'detail' => $result->getDetail()]);
+                    return view('hanoivip::newrecharge-result-pending', ['trans' => $trans, 'detail' => $result->getDetail()]);
                 }
                 elseif ($result->isFailure())
                 {
-                    return view('hanoivip.game::newrecharge-failure', ['message' => $result->getDetail()]);
+                    return view('hanoivip::newrecharge-failure', ['message' => $result->getDetail()]);
                 }
                 else
                 {
-                    return view('hanoivip.game::newrecharge-result-success');
+                    return view('hanoivip::newrecharge-result-success');
                 }
             }
         }
         catch (Exception $ex)
         {
             Log::error("NewFlow query trans exception: " . $ex->getMessage());
-            return view('hanoivip.game::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.query-error')]);
+            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.query-error')]);
         }
     }
     /**
@@ -226,13 +226,13 @@ class NewFlow extends Controller
             }
             else
             {
-                return view('hanoivip.game::newrecharge-history', ['history' => $result[0], 'total_page' => $result[1]]);
+                return view('hanoivip::newrecharge-history', ['history' => $result[0], 'total_page' => $result[1]]);
             }
         }
         catch (Exception $ex)
         {
             Log::error("NewFlow query trans exception: " . $ex->getMessage());
-            return view('hanoivip.game::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.query-error')]);
+            return view('hanoivip::newrecharge-failure', ['message' => __('hanoivip.game::newrecharge.query-error')]);
         }
     }
     
