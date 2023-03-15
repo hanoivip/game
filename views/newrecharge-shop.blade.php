@@ -13,7 +13,7 @@
 Chọn gói nạp:<select id="item" name="item">
 	@foreach ($items as $item)
 		<option value="{{$item->merchant_id}}">
-			{{$item->merchant_title}}
+			{{$item->merchant_title}} - {{$item->price}} {{$item->currency}}
 		</option>
 	@endforeach
 </select>

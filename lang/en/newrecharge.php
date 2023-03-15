@@ -19,6 +19,7 @@ return [
     ],
     'not-enough-money' => 'Payment not enough money (money has been returned to web ewallet)',
     'shop-error' => 'Loading shop error! Please try again!',
+    'recharge-error' => 'Payment error! Please try again!',
     'shop-empty' => 'Shop is empty!',
     'callback-error' => 'Payment error. Contact customer support (callback-error)',
     'query-error' => 'Payment querying error, please try again!',

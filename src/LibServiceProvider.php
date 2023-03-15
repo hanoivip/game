@@ -19,7 +19,7 @@ class LibServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__ . '/../views', 'hanoivip.game');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
-        $this->loadTranslationsFrom( __DIR__.'/../lang', 'hanoivip');
+        $this->loadTranslationsFrom( __DIR__.'/../lang', 'hanoivip.game');
     }
 
     public function register()
