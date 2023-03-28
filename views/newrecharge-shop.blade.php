@@ -10,7 +10,7 @@
 <input type="hidden" id="svname" name="svname" value="{{$svname}}"/>
 <input type="hidden" id="role" name="role" value="{{$role}}"/>
 <input type="hidden" id="client" name="client" value="{{$client}}"/>
-Chọn gói nạp:<select id="item" name="item">
+Choose item to buy:<select id="item" name="item">
 	@foreach ($items as $item)
 		<option value="{{$item->merchant_id}}">
 			{{$item->merchant_title}} - {{$item->price}} {{$item->currency}}
