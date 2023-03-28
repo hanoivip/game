@@ -4,6 +4,6 @@
 
 @section('content')
 
-<a href="{{ route('newrecharge') }}"><button>Chuyển nữa</button></a>
+<a href="{{ route('newrecharge') }}"><button>Pay more</button></a>
 
 @endsection

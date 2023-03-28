@@ -6,8 +6,8 @@
 
 <p>{{__('hanoivip.game::newrecharge.pending')}}</p>
 
-<a href="{{ route('newrecharge.refresh', ['trans' => $trans]) }}"><button>Cập nhật</button></a>
+<a href="{{ route('newrecharge.refresh', ['trans' => $trans]) }}"><button>Refresh</button></a>
 
-<a href="{{ route('newrecharge') }}"><button>Chuyển nữa</button></a>
+<a href="{{ route('newrecharge') }}"><button>Pay more</button></a>
 
 @endsection
