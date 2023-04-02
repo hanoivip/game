@@ -77,27 +77,32 @@ class RechargeService
                 $log->status = 3;
                 $orderDetail = IapFacade::detail($order);
                 $amount = intval($result->getAmount());
+                $amountCur = $result->getCurrency();
                 $price = intval($orderDetail['item_price']);
                 $currency = $orderDetail['item_currency'];
-                if ($amount >= $price)
+                // binh thuong thi su dung dich vu nap cua chinh dat nuoc no, nen ko can so sanh don vi tien te
+                // neu su dung dich vu nap cua dat nuoc khac, thi lai phai so sanh ti le
+                $conAmount = BalanceFacade::convert($amount, $amountCur, $currency);
+                if ($conAmount >= $price)
                 {
                     dispatch(new SendCoin($orderDetail, $log->id));
-                    $change = $amount - $price;
+                    $change = $conAmount - $price;
                     if (!empty($change))
                     {
                         Log::debug("RechargeService there was a change $change on $order");
-                        BalanceFacade::add($userId, $change, "PaymentChanges@" . $order);
+                        BalanceFacade::add($userId, $change, "PaymentChanges", 0, $currency);
                         $log->status = 4;
                     }
                 }
                 else
                 {
                     $log->status = 5;
-                    BalanceFacade::add($userId, $amount, $currency, "PaymentRefund@" . $order);
+                    BalanceFacade::add($userId, $conAmount, "PaymentRefund", 0, $currency);
                 }
-                $log->amount = $amount;
+                $log->amount = $conAmount;
+                $log->currency = $currency;
                 // notice 
-                event(new UserTopup($userId, 0, $amount, $receipt));
+                event(new UserTopup($userId, 0, $conAmount, $receipt));
             }
             else
             {
