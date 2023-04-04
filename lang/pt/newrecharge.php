@@ -3,17 +3,17 @@
 return [
     'history' => [
         'status' => [
-            0 => 'Processing..',
-            1 => 'Unpaid.',
-            2 => 'Payment failure.',
-            3 => 'Payment success.',
-            4 => 'Payment success (have changes)',
-            5 => 'Money is not enough and is refuned to webcoins.'
+            0 => 'Processando..',
+            1 => 'Não pago.',
+            2 => 'Falha no pagamento.',
+            3 => 'Pagamento bem-sucedido.',
+            4 => 'Pagamento com sucesso (possuem alterações)',
+            5 => 'O dinheiro não é suficiente e é reembolsado para webcoins.'
         ],
         'game_status' => [
-            0 => 'Processing..',
-            1 => 'Success',
-            2 => 'Retrying..'
+            0 => 'Processando..',
+            1 => 'Sucesso',
+            2 => 'Tentando novamente..'
         ],
         'empty' => 'You have no payments!'
     ],
