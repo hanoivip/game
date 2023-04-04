@@ -4,11 +4,11 @@ return [
     'history' => [
         'status' => [
             0 => 'Processing..',
-            1 => 'Unpaid',
-            2 => 'Payment failure',
-            3 => 'Payment success',
+            1 => 'Unpaid.',
+            2 => 'Payment failure.',
+            3 => 'Payment success.',
             4 => 'Payment success (have changes)',
-            5 => 'Payment not enough'
+            5 => 'Payment not enough. Money is refuned.'
         ],
         'game_status' => [
             0 => 'Processing..',
