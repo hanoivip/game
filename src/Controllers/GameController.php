@@ -167,7 +167,7 @@ class GameController extends Controller
 	    if (!BalanceFacade::enough($uid, $coin, $cointype))
 	    {
 	        Log::error("Game user not enough coin");
-	        return __('hanoivip.game::game.recharge-fail.not-enough-coin');
+	        return __('hanoivip.game::recharge.not-enough-coin');
 	    }
 	    $result = $this->games->recharge($svname, $user, $package, $params);
 	    if ($result === true)
@@ -176,7 +176,7 @@ class GameController extends Controller
     	    if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
     	    {
     	        Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
-    	        return __('hanoivip.game::game.recharge-fail.remove-coin-fail');
+    	        return __('hanoivip.game::recharge.remove-coin-fail');
     	    }
 	    }
 	    return $result;

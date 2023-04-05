@@ -114,14 +114,14 @@ class GameService
             if (!$this->operator->recharge($realReceiver, $server, $order, $recharge, $params))
             {
                 Log::error("Game game operator return fail.");
-                return __('hanoivip.game::game.recharge-fail.ops-recharge-fail');
+                return __('hanoivip.game::recharge.ops-recharge-fail');
             }
             $this->logs->logRecharge($uid, $server, $package, $order, $realReceiver->getAuthIdentifier());
         }
         catch (Exception $ex)
         {
             Log::error("Game game operator exception. Ex:" . $ex->getMessage());
-            return __('hanoivip.game::game.recharge-fail.ops-recharge-ex');
+            return __('hanoivip.game::recharge.ops-recharge-ex');
         }
         // Event
         event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));
