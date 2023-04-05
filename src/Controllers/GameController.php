@@ -257,7 +257,7 @@ class GameController extends Controller
 	
 	public function onRechargeSuccess(Request $request)
 	{
-	    return view('hanoivip::recharge-result-success');
+	    return view('hanoivip::recharge-result-success', ['message' => __('hanoivip.game::recharge.success')]);
 	}
 	
 	public function onRechargeFail(Request $request)
