@@ -135,8 +135,9 @@ class GameController extends Controller
 	    $user = Auth::user();
 	    if ($request->ajax())
 	    {
+	        Log::debug("svname " . $svname);
 	        $roles = $this->games->queryRoles($user, $svname);
-	        return ['roles' => $roles];
+	        return ['error' => 0, 'message' => 'success', 'data' => ['roles' => $roles]];
 	    }
 	    else
 	    {
@@ -190,6 +191,7 @@ class GameController extends Controller
 	 * 
 	 * TODO: 
 	 * + request validation
+	 * + request lock (server side), middelware
 	 * + request throttle
 	 * 
 	 * @param string $svname
@@ -203,21 +205,9 @@ class GameController extends Controller
 	    $package = $request->input('package');
 	    
 	    $user = Auth::user();
-	    $lockKey = "Recharging" . $user->getAuthIdentifier();
-	    $lock = Cache::lock($lockKey);
 	    try 
-	    { 	        
-	        if (!$lock->get())
-	        {
-	            if ($request->expectsJson())
-	                return ['error' => 1, 'message' => __('hanoivip.game::recharge.too-fast')]; 
-	            else
-	               return view('hanoivip::recharge-result', ['error_message' => __('hanoivip.game::recharge.too-fast')]);
-	        }
-	        // Check enough
-	        
+	    { 	             
 	        $result = $this->_recharge($svname, $user, $package, $params);
-    	    $lock->release();
     	    if ($result === true)
     	    {
     	        if ($request->expectsJson())
@@ -246,7 +236,7 @@ class GameController extends Controller
 	        Log::error("Game recharge exception:" . $ex->getMessage());
 	        if ($request->expectsJson())
 	        {
-	            return ['error' => 1, 'message' => __('hanoivip.game::recharge.exception')];
+	            return ['error' => 1, 'error_message' => __('hanoivip.game::recharge.exception')];
 	        }
 	        else
 	        {

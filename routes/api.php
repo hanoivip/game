@@ -11,8 +11,8 @@ Route::middleware([
     Route::post('/choose-role', 'WizardController@continue');
     // done, let move on
     Route::post('/wizard/role', 'WizardController@continue')->name('wizard.role.next');
-    Route::any('/game/recharge', 'GameController@doRecharge');
-    Route::any('/user/all-role', 'GameController@allRoles');
+    Route::any('/game/recharge', 'GameController@doRecharge')->name('api.game.recharge');
+    Route::any('/user/all-role', 'GameController@queryRoles')->name('api.game.roles');
     // payment callback
     Route::any('/purchase/callback', 'NewFlow@rechargeDone');
     // payment history
