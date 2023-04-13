@@ -4,7 +4,6 @@ namespace Hanoivip\Game\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\Game\Recharge;
@@ -135,7 +134,6 @@ class GameController extends Controller
 	    $user = Auth::user();
 	    if ($request->ajax())
 	    {
-	        Log::debug("svname " . $svname);
 	        $roles = $this->games->queryRoles($user, $svname);
 	        return ['error' => 0, 'message' => 'success', 'data' => ['roles' => $roles]];
 	    }
@@ -144,6 +142,14 @@ class GameController extends Controller
 	        $viewData = $this->getRechargeViewData($user, $svname);
 	        return view('hanoivip::recharge', $viewData);
 	    }
+	}
+	
+	public function webQueryRoles(Request $request)
+	{
+	    $svname = $request->input('svname');
+	    $user = Auth::user();
+	    $roles = $this->games->queryRoles($user, $svname);
+	    return view('hanoivip::recharge-roles-partial', ['roles' => $roles]);
 	}
 	
 	/**
