@@ -37,6 +37,10 @@ class NewFlow extends Controller
         if ($request->has('client'))
         {
             $client = $request->input('client');
+            session(['client' => $request->input('client')]);
+        }
+        else {
+            $client = session('client', 'app');
         }
         $servers = $this->servers->getUserServer();
         return view('hanoivip::newrecharge-ajax', ['client' => $client, 'servers' => $servers]);
