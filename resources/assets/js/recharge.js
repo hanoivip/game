@@ -52,6 +52,7 @@ $(document).ready(function(){
             method: 'POST',
             contentType: 'application/x-www-form-urlencoded',
             data: new URLSearchParams(param).toString(),
+            dataType : 'html',
             cache: false,
             processData: false,
             success:function(response)
@@ -80,6 +81,7 @@ $(document).ready(function(){
             method: 'POST',
             contentType: 'application/x-www-form-urlencoded',
             data: new URLSearchParams(param).toString(),
+            dataType : 'html',
             cache: false,
             processData: false,
             success:function(response)
