@@ -11,16 +11,42 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Hanoivip\Game\Services\ServerService;
 
 class NewFlow extends Controller
 {   
     private $rechargeService;
     
-    public function __construct(RechargeService $recharge)
+    private $servers;
+    
+    public function __construct(
+        RechargeService $recharge,
+        ServerService $servers)
     {
         $this->rechargeService = $recharge;
+        $this->servers = $servers;
     }
-    
+    /**
+     * Ajax support
+     * @param Request $request
+     * @return \Illuminate\View\View|\Illuminate\Contracts\View\Factory
+     */
+    public function start(Request $request)
+    {
+        $client = "";
+        if ($request->has('client'))
+        {
+            $client = $request->input('client');
+        }
+        $servers = $this->servers->getUserServer();
+        return view('hanoivip::newrecharge-ajax', ['client' => $client, 'servers' => $servers]);
+    }
+    /**
+     * Old react supported
+     * @deprecated
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function startWizard(Request $request)
     {
         if ($request->has('client'))
@@ -29,16 +55,32 @@ class NewFlow extends Controller
         }
         return redirect()->route('wizard.role', ['next' => 'newrecharge.shop']);
     }
+    
     public function showShop(Request $request)
     {
         $svname=$request->input('svname');
         $role=$request->input('role');
         $client=session()->get('client', 'app');
+        $template = 'hanoivip::newrecharge-shop';
+        if ($request->has('template'))
+        {
+            $template = $request->input('template');
+        }
         try
         {
             // show items
-            $items = IapFacade::items($client);// or recharges ?
-            return view('hanoivip::newrecharge-shop', ['items' => $items, 'svname' => $svname, 'role' => $role, 'client' => $client]);
+            $items = IapFacade::items($client);
+            if ($request->expectsJson())
+            {
+                return [
+                    'error' => 0,
+                    'message' => 'success',
+                    'data' => [['items' => $items, 'svname' => $svname, 'role' => $role, 'client' => $client]]
+                ];
+            }
+            else {
+                return view($template, ['items' => $items, 'svname' => $svname, 'role' => $role, 'client' => $client]);
+            }
         }
         catch (Exception $ex)
         {

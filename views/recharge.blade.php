@@ -79,7 +79,7 @@ form{
 
 <form data-action="{{ route('api.game.recharge') }}" id="recharge">
 	<p style="text-align: left;">Chọn máy chủ:</p>
-	<select id="recharge-svname" name="svname" style="width: 100%;" data-action="{{ route('api.game.roles') }}">
+	<select id="recharge-svname" name="svname" style="width: 100%;" data-action="{{ route('game.roles') }}">
 		@foreach ($servers as $sv)
 			@if (isset($selected) && $sv->name == $selected)
 				<option value="{{ $sv->name }}" selected>{{ $sv->title }}</option>
@@ -94,17 +94,10 @@ form{
 			<option value="{{ $p->code }}">{{ $p->title }}</option>
 		@endforeach
 	</select>
-	@if (!empty($roles))
-        <p style="text-align: left;">Chọn nhân vật:</p>
-        <select id="recharge-roles" name="roleid" style="width: 100%;">
-        	@foreach ($roles as $roleid => $rolename)
-        		<option value="{{ $roleid }}">{{ $rolename }}</option>
-        	@endforeach
-        </select>
-    @else
-    	<p style="text-align: left;">Bạn vẫn chưa có nhân vật nào!</p>
-    @endif
-	<a data-action="{{ route('api.game.roles') }}" id="recharge-refresh-roles">Làm mới ds nhân vật</a>
+	<div id="recharge-roles-div">
+		@include('hanoivip::recharge-roles-partial', ['roles' => $roles])
+	</div>
+	<a data-action="{{ route('game.roles') }}" id="recharge-refresh-roles" data-update-id="recharge-roles-div">Làm mới ds nhân vật</a>
 	<br/><br/><br/>
 	<button type="submit" style="width: 100%;
     padding: 7px 0;

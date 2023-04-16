@@ -127,30 +127,40 @@ class GameController extends Controller
             $data['selected'] = $selectedServer;
         return $data;
 	}
-	
+	/**
+	 * For app client
+	 */
 	public function queryRoles(Request $request)
 	{
 	    $svname = $request->input('svname');
 	    $user = Auth::user();
-	    if ($request->ajax())
+	    if ($request->expectsJson())
 	    {
 	        $roles = $this->games->queryRoles($user, $svname);
 	        return ['error' => 0, 'message' => 'success', 'data' => ['roles' => $roles]];
 	    }
 	    else
 	    {
-	        $viewData = $this->getRechargeViewData($user, $svname);
-	        return view('hanoivip::recharge', $viewData);
+	        $template = 'hanoivip::recharge-roles-partial';
+	        if ($request->has('template'))
+	            $template = $request->input('template');
+            $roles = $this->games->queryRoles($user, $svname);
+            return view($template, ['roles' => $roles]);
 	    }
 	}
-	
+	/**
+	 * For ajax client
+	 *
 	public function webQueryRoles(Request $request)
 	{
 	    $svname = $request->input('svname');
+	    $template = 'hanoivip::recharge-roles-partial';
+	    if ($request->has('template'))
+	        $template = $request->input('template');
 	    $user = Auth::user();
 	    $roles = $this->games->queryRoles($user, $svname);
-	    return view('hanoivip::recharge-roles-partial', ['roles' => $roles]);
-	}
+	    return view($template, ['roles' => $roles]);
+	}*/
 	
 	/**
 	 * Vào trang cho phép mua tiền tệ trong game.
