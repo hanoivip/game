@@ -127,20 +127,21 @@ class GameController extends Controller
             $data['selected'] = $selectedServer;
         return $data;
 	}
-	/**
-	 * For app client
-	 */
+	
 	public function queryRoles(Request $request)
 	{
 	    $svname = $request->input('svname');
 	    $user = Auth::user();
 	    if ($request->expectsJson())
 	    {
+	        // react client
 	        $roles = $this->games->queryRoles($user, $svname);
-	        return ['error' => 0, 'message' => 'success', 'data' => ['roles' => $roles]];
+	        //return ['error' => 0, 'message' => 'success', 'data' => ['roles' => $roles]];
+	        return ['roles' => $roles];
 	    }
 	    else
 	    {
+	        // brower client
 	        $template = 'hanoivip::recharge-roles-partial';
 	        if ($request->has('template'))
 	            $template = $request->input('template');
