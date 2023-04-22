@@ -150,20 +150,6 @@ class GameController extends Controller
 	    }
 	}
 	/**
-	 * For ajax client
-	 *
-	public function webQueryRoles(Request $request)
-	{
-	    $svname = $request->input('svname');
-	    $template = 'hanoivip::recharge-roles-partial';
-	    if ($request->has('template'))
-	        $template = $request->input('template');
-	    $user = Auth::user();
-	    $roles = $this->games->queryRoles($user, $svname);
-	    return view($template, ['roles' => $roles]);
-	}*/
-	
-	/**
 	 * Vào trang cho phép mua tiền tệ trong game.
 	 */
 	public function recharge()
@@ -173,7 +159,7 @@ class GameController extends Controller
 	}
 	
 	// move from service to here
-	private function _recharge($svname, $user, $package, $params)
+	private function _recharge($svname, $user, $package, $params, $balanceType = 0)
 	{
 	    $server = $this->servers->getServerByName($svname);
 	    $recharge = Recharge::where('code', $package)->first();
@@ -181,7 +167,7 @@ class GameController extends Controller
 	    $uid = $user->getAuthIdentifier();
 	    $package = $recharge->code;
 	    $coin = $recharge->coin;
-	    $cointype = $recharge->coin_type;
+	    $cointype = $balanceType;//$recharge->coin_type;
 	    if (!BalanceFacade::enough($uid, $coin, $cointype))
 	    {
 	        Log::error("Game user not enough coin");
@@ -220,11 +206,15 @@ class GameController extends Controller
 	    $params = $request->all();
 	    $svname = $request->input('svname');
 	    $package = $request->input('package');
-	    
+	    $balanceType = 0;
+	    if ($request->has('balance_type'))
+	    {
+	        $balanceType = $request->input('balance_type');
+	    }
 	    $user = Auth::user();
 	    try 
 	    { 	             
-	        $result = $this->_recharge($svname, $user, $package, $params);
+	        $result = $this->_recharge($svname, $user, $package, $params, $balanceType);
     	    if ($result === true)
     	    {
     	        if ($request->expectsJson())

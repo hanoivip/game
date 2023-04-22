@@ -97,19 +97,19 @@ $(document).ready(function(){
 	})
 	$('#recharge-balance-refresh').on('click', function () {
 			event.preventDefault();
-			var url = $(this).attr('data-action');
+			var url = $(this).attr('data-action')
+			var updateId = $(this).attr('data-update-id')
 			$.ajax({
 	            url: url,
 	            method: 'POST',
 	            contentType: 'application/x-www-form-urlencoded',
+	            dataType : 'html',
 	            cache: false,
 	            processData: false,
 	            success:function(response)
 	            {
 	            	console.log(response)
-	            	if (response.error == 0) {
-	            		$('#recharge-balance').text(response.data.balances[0].balance)
-	            	}
+	            	$('#' + updateId).html(response)
 	            },
 	            error: function(response) {
 	            	$("#error-message").text(response)
