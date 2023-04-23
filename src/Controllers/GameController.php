@@ -179,7 +179,7 @@ class GameController extends Controller
     	    $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
     	    if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
     	    {
-    	        Log::warn("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
+    	        Log::warning("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
     	        return __('hanoivip.game::recharge.remove-coin-fail');
     	    }
 	    }
