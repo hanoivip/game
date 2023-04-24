@@ -176,7 +176,7 @@ class GameController extends Controller
 	    $result = $this->games->recharge($svname, $user, $package, $params);
 	    if ($result === true)
 	    {
-    	    $reason = "Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
+	        $reason = __('hanoivip.payment::balance.Recharge', ['server' => $server->title, 'item' => $recharge->title]);//"Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
     	    if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
     	    {
     	        Log::warning("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
