@@ -58,6 +58,21 @@ class GameController extends Controller
 	 */
 	public function serverlist(Request $request)
 	{
+	    $servers = $this->servers->getUserServer();
+	    if ($request->expectsJson())
+	    {
+	        return ['servers' => $servers];
+	    }
+	    else 
+	    {
+	        $template = 'hanoivip::serverlist-partial';
+	        if ($request->has('template'))
+	        {
+	            $template = $request->input('template');
+	        }
+	        return view($template, ['servers' => $servers]);
+	    }
+	    /*
 	    $params = [];
 		$params['servers'] = $this->servers->getUserServer();
 		$params['schedules'] = $this->schedule->getAll();
@@ -69,7 +84,7 @@ class GameController extends Controller
 		if ($request->ajax())
 		    return $params;
 		else
-		    return view('hanoivip::serverlist', $params);
+		    return view('hanoivip::serverlist', $params);*/
 	}
 	
 	/**

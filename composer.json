@@ -1,22 +1,25 @@
 {
-    "name": "hanoivip/game",
-    "description": "Play Game Component",
-    "type": "library",
-    "require": {
+	"name" : "hanoivip/game",
+	"description" : "Play Game Component",
+	"type" : "library",
+	"require" : {
 		"php" : ">=7.0.0",
 		"fideloper/proxy" : "~4.0",
 		"guzzlehttp/guzzle" : "^6.3",
 		"laravel/framework" : ">=5.5",
 		"laravel/tinker" : "~1.0",
-		"hanoivip/payment-contract": "dev-main",
-		"hanoivip/payment-method-contract": "dev-main",
-		"hanoivip/iap-contract": "dev-main"
+		"hanoivip/payment-contract" : "dev-main",
+		"hanoivip/payment-method-contract" : "dev-main",
+		"hanoivip/iap-contract" : "dev-main"
 	},
 	"autoload" : {
 		"psr-4" : {
 			"Hanoivip\\Game\\" : "src/",
-			"Hanoivip\\Game\\Database\\Seeds\\": "database/seeds/"
-		}
+			"Hanoivip\\Game\\Database\\Seeds\\" : "database/seeds/"
+		},
+		"files" : [
+			"src/helper.php"
+		]
 	},
 	"extra" : {
 		"laravel" : {
