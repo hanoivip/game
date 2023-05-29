@@ -26,14 +26,14 @@ class RechargeService
         return __('hanoivip.game::newrecharge.receipt-not-exists');
     }
     
-    public function queryReceipt($trans)
+    public function queryReceipt($trans, $force=false)
     {
         $log = RechargeLog::where('receipt', $trans)->first();
         if (!empty($log))
         {
             if ($log->status == 5)
                 return __('hanoivip.game::newrecharge.not-enough-money');
-            return PaymentFacade::query($trans);
+            return PaymentFacade::query($trans, $force);
         }
         return __('hanoivip.game::newrecharge.receipt-not-exists');
     }

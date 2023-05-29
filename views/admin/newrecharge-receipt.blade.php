@@ -22,7 +22,7 @@
     		<p>Thanh toán thất bại. Chi tiết {{$detail->getDetail()}}</p>
 		@else
 			<p>Thanh toán thành công</p>
-			<form method="post" action="{{route('ecmin.newrecharge.receipt.retry')}}">
+			<form method="post" action="{{route('ecmin.newrecharge.receipt.check')}}">
             	{{csrf_field()}}
             	<input type="hidden" name="receipt" id="receipt" value="{{$receipt}}"/>
             	<button type="submit">Trigger</button>

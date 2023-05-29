@@ -42,5 +42,6 @@ Route::middleware([
     // Search
     Route::any('/newrecharge/receipt', 'Admin@viewReceipt')->name('ecmin.newrecharge.receipt');
     // Admin trigger a receipt callback
-    Route::post('/newrecharge/receipt/retry', 'Admin@retry')->name('ecmin.newrecharge.receipt.retry');
+    //Route::post('/newrecharge/receipt/retry', 'Admin@retry')->name('ecmin.newrecharge.receipt.retry');
+    Route::post('/newrecharge/receipt/check', 'Admin@check')->name('ecmin.newrecharge.receipt.check');
 });
