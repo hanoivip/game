@@ -86,36 +86,6 @@ class GameController extends Controller
 		else
 		    return view('hanoivip::serverlist', $params);*/
 	}
-	
-	/**
-	 * Vào 1 máy chủ của 1 game. 
-	 * @param string $name Server Name
-	 */
-	public function play($svname)
-	{
-	    try 
-	    {
-    	    $server = $this->servers->getServerByName($svname);
-    	    if (empty($server))
-    	        throw new Exception("Cụm máy chủ không tồn tại.");
-	        $user = Auth::user();
-    		$url = $this->games->enter($server, $user);
-    		if (empty($url))
-    		    throw new Exception("Cụm máy chủ đang bảo trì.");
-    	    if (strpos($url, 'message=') !== false)
-    	        return view('hanoivip::playfail', [ 'message' => substr($url, strlen('message=')) ]);
-            if (strpos($url, 'uri=') !== false)
-            {
-                return view('hanoivip::play', [ 'playuri' => substr($url, strlen('uri=')) ]);
-            }
-	    }
-	    catch (Exception $ex)
-	    {
-	        Log::error('Game play game exception. Msg:' . $ex->getMessage());
-	        return view('hanoivip::playfail', [ 'error_message' => "Lỗi xảy ra. Thử lại trước khi liên hệ GM hỗ trợ."]);
-	    }
-	}
-	
 	/**
 	 * 
 	 * @param Authenticatable $user
@@ -152,6 +122,7 @@ class GameController extends Controller
 	        // react client
 	        $roles = $this->games->queryRoles($user, $svname);
 	        //return ['error' => 0, 'message' => 'success', 'data' => ['roles' => $roles]];
+	        //old version..
 	        return ['roles' => $roles];
 	    }
 	    else
@@ -209,7 +180,6 @@ class GameController extends Controller
 	 * 
 	 * TODO: 
 	 * + request validation
-	 * + request lock (server side), middelware
 	 * + request throttle
 	 * 
 	 * @param string $svname
