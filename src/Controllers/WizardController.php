@@ -18,6 +18,5 @@ class WizardController extends Controller
         $roleId = $request->get('role');
         $next = $request->get('next');
         return redirect()->route($next, ['svname' => $svname, 'role' => $roleId]);
-        //return redirect($nextUrl)->withInput();
     }
 }

@@ -24,9 +24,9 @@ class GameService
     
     const ONLINE_CACHE_PREFIX = "OnlineStat";
     
-    const ROLE_CACHE_PREFIX = "RoleOf";
+    //const ROLE_CACHE_PREFIX = "RoleOf";
     
-    const ROLE_CACHE_DURATION = 1800;//30mins
+    //const ROLE_CACHE_DURATION = 1800;//30mins
     
     const ALL_ROLE_CACHE_PREFIX = "AllRoleOf";
     
@@ -252,16 +252,7 @@ class GameService
             $serverRec = $this->servers->getServerByName($server);
         try 
         {
-            $uid = $user->getAuthIdentifier();
-            $key = self::ROLE_CACHE_PREFIX . $uid . '_' . $serverRec->name;
-            if (Cache::has($key))
-            {
-                return Cache::get($key);
-            }
-            $roles = $this->operator->characters($user, $serverRec);
-            if (!empty($roles))
-                Cache::put($key, $roles, Carbon::now()->addSeconds(self::ROLE_CACHE_DURATION));
-            return $roles;
+            return $this->operator->characters($user, $serverRec);
         } 
         catch (Exception $e) 
         {
@@ -269,8 +260,33 @@ class GameService
         }
         return [];
     }
+    /*
+    public function queryRoles1($user, $server)
+    {
+        $serverRec = $server;
+        if (gettype($server) == 'string')
+            $serverRec = $this->servers->getServerByName($server);
+            try
+            {
+                $uid = $user->getAuthIdentifier();
+                $key = self::ROLE_CACHE_PREFIX . $uid . '_' . $serverRec->name;
+                if (Cache::has($key))
+                {
+                    return Cache::get($key);
+                }
+                $roles = $this->operator->characters($user, $serverRec);
+                if (!empty($roles))
+                    Cache::put($key, $roles, Carbon::now()->addSeconds(self::ROLE_CACHE_DURATION));
+                    return $roles;
+            }
+            catch (Exception $e)
+            {
+                Log::error($e->getMessage());
+            }
+            return [];
+    }*/
     /**
-     * 
+     * @deprecated
      * @param UserVO $user
      * @return array server name => array (roleid => rolename)
      */
@@ -303,5 +319,13 @@ class GameService
     public function getRechargePackages()
     {
         return Recharge::all();
+    }
+    
+    public function getRank($server, $type)
+    {
+        $serverRec = $server;
+        if (gettype($server) == 'string')
+            $serverRec = $this->servers->getServerByName($server);
+        return $this->operator->rank($serverRec, $type);
     }
 }

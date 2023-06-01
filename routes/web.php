@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('web', 'auth:web')->namespace('Hanoivip\Game\Controllers')->group(function () {
-    //Route::get('/server-list', 'GameController@serverlist')->name('server-list');
+    
     //Route::get('/quick-play', 'GameController@quickplay');
     //Route::get('/play/svname/{svname}', 'GameController@play')->name('play');
     // Flow 1: topup indirect, then buying item
@@ -44,4 +44,9 @@ Route::middleware([
     // Admin trigger a receipt callback
     //Route::post('/newrecharge/receipt/retry', 'Admin@retry')->name('ecmin.newrecharge.receipt.retry');
     Route::post('/newrecharge/receipt/check', 'Admin@check')->name('ecmin.newrecharge.receipt.check');
+});
+
+Route::middleware('web')->namespace('Hanoivip\Game\Controllers')->group(function () {
+    //Route::get('/server-list', 'GameController@serverlist')->name('server-list');
+    Route::get('/rank', 'GameController@webGetRank')->name('rank');
 });

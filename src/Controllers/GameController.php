@@ -23,7 +23,6 @@ class GameController extends Controller
     protected $schedule;
     
     protected $logs;
-
     
     /**
      * Create a new controller instance.
@@ -45,7 +44,7 @@ class GameController extends Controller
     /**
      * Vào nhanh 1 game. 
      * Server sẽ tự động được chọn là server mới nhất.
-     *  
+     * @deprecated
      */
 	public function quickplay()
 	{
@@ -249,11 +248,52 @@ class GameController extends Controller
 	        $message = $request->input('error_message');
 	    return view('hanoivip::recharge-result-fail', ['error_message' => $message]);
 	}
-
+    /*
 	public function allRoles(Request $request)
 	{
 	    $user = Auth::user();
         $roles = $this->games->allRole($user);
         return ['error'=>0,'message'=>'success','data'=> $roles];
+	}*/
+	public function getRank(Request $request)
+	{
+	    $type = $request->input('type');
+	    $svname = $request->input('svname');
+	    try
+	    {
+	        $list = $this->games->getRank($svname, $type);
+	        if ($request->expectsJson())
+	        {
+	           return ['error' => 0, 'message' => 'success', 'data' => $list];
+	        }
+	        else
+	        {
+	            $template = 'hanoivip::game-rank-partial';
+	            if ($request->has('template'))
+	                $template = $request->input('template');
+	            return view($template, ['list' => $list]);
+	        }
+	    }
+	    catch (Exception $ex)
+	    {
+	        Log::error("Game get rank exception: "  . $ex->getMessage());
+	        if ($request->expectsJson())
+	        {
+	           return ['error' => 1, 'message' => 'failure'];
+	        }
+	        else
+	        {
+	            $template = 'hanoivip::game-rank-partial';
+	            if ($request->has('template'))
+	                $template = $request->input('template');
+                return view($template, ['list' => []]);
+	        }
+	    }
+	}
+	
+	public function webGetRank(Request $request)
+	{
+	    $servers = $this->servers->getUserServer();
+	    return view('hanoivip::game-rank', ['servers' => $servers]);
 	}
 }

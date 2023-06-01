@@ -7,14 +7,18 @@ Route::middleware([
     ->prefix('api')
     ->group(function () {
     Route::any('/server/list', 'GameController@serverlist')->name('game.servers');
-    Route::any('/user/role', 'GameController@queryRoles');
-    //Wizard Roles old
-    //Route::post('/choose-role', 'WizardController@continue');
-    //Route::post('/wizard/role', 'WizardController@continue')->name('wizard.role.next');
+    Route::middleware('cacheByUser:60')->any('/user/role', 'GameController@queryRoles');
     Route::middleware('lockByUser:10,5')->any('/game/recharge', 'GameController@doRecharge')->name('game.recharge');
-    Route::any('/user/all-role', 'GameController@queryRoles')->name('game.roles');
+    Route::middleware('cacheByUser:60')->any('/user/all-role', 'GameController@queryRoles')->name('game.roles');
     // payment callback
     Route::any('/purchase/callback', 'NewFlow@rechargeDone');
     // payment history
     Route::any('/payment/history', 'NewFlow@history');
+});
+    
+Route::namespace('Hanoivip\Game\Controllers')
+->prefix('api')
+->group(function () {
+    // 1 day cache
+    Route::middleware('cache:1440')->any('/game/rank', 'GameController@getRank')->name('game.rank');
 });
