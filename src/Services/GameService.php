@@ -311,11 +311,6 @@ class GameService
         return $roles;
     }
     
-    public function accountHasManyChars()
-    {
-        return $this->operator->supportMultiChar();
-    }
-    
     public function getRechargePackages()
     {
         return Recharge::all();
