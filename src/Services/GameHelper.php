@@ -58,4 +58,9 @@ class GameHelper
     {
         return $this->game->queryRoles(new UserVO($userId, ""), $server);
     }
+    
+    public function transferAccount($oldUserId, $newUserId)
+    {
+        return $this->game->transferAccount($oldUserId, $newUserId);
+    }
 }

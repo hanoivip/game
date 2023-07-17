@@ -71,19 +71,6 @@ class GameController extends Controller
 	        }
 	        return view($template, ['servers' => $servers]);
 	    }
-	    /*
-	    $params = [];
-		$params['servers'] = $this->servers->getUserServer();
-		$params['schedules'] = $this->schedule->getAll();
-		$params['ranks'] = $this->games->rank();
-		if (Auth::check())
-		{
-		    $params['recents'] = $this->logs->getRecentEnter(Auth::user()->getAuthIdentifier());
-		}
-		if ($request->ajax())
-		    return $params;
-		else
-		    return view('hanoivip::serverlist', $params);*/
 	}
 	/**
 	 * 
@@ -248,13 +235,7 @@ class GameController extends Controller
 	        $message = $request->input('error_message');
 	    return view('hanoivip::recharge-result-fail', ['error_message' => $message]);
 	}
-    /*
-	public function allRoles(Request $request)
-	{
-	    $user = Auth::user();
-        $roles = $this->games->allRole($user);
-        return ['error'=>0,'message'=>'success','data'=> $roles];
-	}*/
+	
 	public function getRank(Request $request)
 	{
 	    $type = $request->input('type');

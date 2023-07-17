@@ -4,12 +4,13 @@ namespace Hanoivip\Game\Services;
 
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
 use Hanoivip\Payment\Facades\BalanceFacade;
-use Hanoivip\IapContract\Facades\IapFacade;
+//use Hanoivip\IapContract\Facades\IapFacade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Hanoivip\Game\RechargeLog;
 use Hanoivip\Game\Jobs\SendCoin;
 use Hanoivip\Events\Gate\UserTopup;
+use Hanoivip\Shop\Facades\OrderFacade;
 
 class RechargeService
 {   
@@ -75,11 +76,15 @@ class RechargeService
             {
                 // first time to process success
                 $log->status = 3;
-                $orderDetail = IapFacade::detail($order);
                 $amount = intval($result->getAmount());
                 $amountCur = $result->getCurrency();
+                /*
+                $orderDetail = IapFacade::detail($order);
                 $price = intval($orderDetail['item_price']);
-                $currency = $orderDetail['item_currency'];
+                $currency = $orderDetail['item_currency'];*/
+                $orderDetail = OrderFacade::detail($order);
+                $price = $orderDetail->price;
+                $currency = $orderDetail->currency;
                 // binh thuong thi su dung dich vu nap cua chinh dat nuoc no, nen ko can so sanh don vi tien te
                 // neu su dung dich vu nap cua dat nuoc khac, thi lai phai so sanh ti le
                 $conAmount = BalanceFacade::convert($amount, $amountCur, $currency);

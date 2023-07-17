@@ -13,23 +13,10 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Hanoivip\Events\Game\UserRecharge;
 use Hanoivip\Events\Game\UserPlay;
+use Hanoivip\Events\Game\UserTransfered;
 
 class GameService
 {
-    const RANK_CACHE_DURATION = 43200;//half of day 
-    
-    const RANK_CACHE_PREFIX = "RankOf";
-    
-    const ONLINE_CACHE_DURATION = 120;//2mins
-    
-    const ONLINE_CACHE_PREFIX = "OnlineStat";
-    
-    //const ROLE_CACHE_PREFIX = "RoleOf";
-    
-    //const ROLE_CACHE_DURATION = 1800;//30mins
-    
-    const ALL_ROLE_CACHE_PREFIX = "AllRoleOf";
-    
     protected $servers;
     
     protected $logs;
@@ -179,42 +166,7 @@ class GameService
      */
     public function onlines($force = false)
     {
-        if (Cache::has(self::ONLINE_CACHE_PREFIX) && !$force)
-        {
-            return Cache::get(self::ONLINE_CACHE_PREFIX);
-        }
-        $onlines = [];
-        $all = $this->servers->getAll();
-        foreach ($all as $server)
-        {
-            $onlines[$server->name] = $this->operator->online($server);
-        }
-        $expires = Carbon::now()->addSeconds(self::ONLINE_CACHE_DURATION);
-        Cache::put(self::ONLINE_CACHE_PREFIX, $onlines, $expires);
-        return $onlines;
-    }
-    
-    /**
-     * 
-     * @return array server name => [ rank type => [rank index => player info] ]
-     */
-    public function rank($force = false)
-    {
-        $key = self::RANK_CACHE_PREFIX;
-        if (Cache::has($key) && !$force)
-        {
-            return Cache::get($key);
-        }
-        $ranks = [];
-        $all = $this->servers->getAll();
-        foreach ($all as $server)
-        {
-            $ranks[$server->name] = $this->operator->rank($server);
-        }
-        
-        $expires = Carbon::now()->addSeconds(self::RANK_CACHE_DURATION);
-        Cache::put($key, $ranks, $expires);
-        return $ranks;
+        throw new Exception("Need implement onlines function");
     }
     
     /**
@@ -249,7 +201,9 @@ class GameService
     {
         $serverRec = $server;
         if (gettype($server) == 'string')
+        {
             $serverRec = $this->servers->getServerByName($server);
+        }
         try 
         {
             return $this->operator->characters($user, $serverRec);
@@ -259,56 +213,6 @@ class GameService
             Log::error($e->getMessage());
         }
         return [];
-    }
-    /*
-    public function queryRoles1($user, $server)
-    {
-        $serverRec = $server;
-        if (gettype($server) == 'string')
-            $serverRec = $this->servers->getServerByName($server);
-            try
-            {
-                $uid = $user->getAuthIdentifier();
-                $key = self::ROLE_CACHE_PREFIX . $uid . '_' . $serverRec->name;
-                if (Cache::has($key))
-                {
-                    return Cache::get($key);
-                }
-                $roles = $this->operator->characters($user, $serverRec);
-                if (!empty($roles))
-                    Cache::put($key, $roles, Carbon::now()->addSeconds(self::ROLE_CACHE_DURATION));
-                    return $roles;
-            }
-            catch (Exception $e)
-            {
-                Log::error($e->getMessage());
-            }
-            return [];
-    }*/
-    /**
-     * @deprecated
-     * @param UserVO $user
-     * @return array server name => array (roleid => rolename)
-     */
-    public function allRole($user)
-    {
-        $uid = $user->getAuthIdentifier();
-        $key = self::ALL_ROLE_CACHE_PREFIX . $uid;
-        $roles = [];
-        if (!Cache::has($key))
-        {
-            // query all roles from all servers..
-            $servers = $this->servers->getAll();
-            foreach ($servers as $server)
-            {
-                $roleInServer = $this->operator->characters($user, $server);
-                $roles[$server->name] = $roleInServer;
-            }
-            Cache::put($key, $roles, Carbon::now()->addSeconds(self::ROLE_CACHE_DURATION));
-        }
-        else
-            $roles = Cache::get($key);
-        return $roles;
     }
     
     public function getRechargePackages()
@@ -322,5 +226,16 @@ class GameService
         if (gettype($server) == 'string')
             $serverRec = $this->servers->getServerByName($server);
         return $this->operator->rank($serverRec, $type);
+    }
+    
+    public function transferAccount($fromUser, $toUser)
+    {
+        $result = $this->operator->transfer($fromUser, $toUser);
+        if ($result)
+        {
+            $this->logs->logTransfer($fromUser, $toUser);
+            event(new UserTransfered($fromUser, $toUser));
+        }
+        return $result;
     }
 }

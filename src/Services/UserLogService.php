@@ -37,4 +37,13 @@ class UserLogService
                         ->get();
         return $recents;
     }
+    
+    public function logTransfer($oldId, $newId)
+    {
+        $log = new UserLog();
+        $log->user_id = $newId;
+        $log->action = "transfer";
+        $log->action_params = $oldId;
+        $log->save();
+    }
 }
