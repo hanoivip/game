@@ -1,6 +1,7 @@
 $(document).ready(function(){
-	$('#btn-next').hide()
+	$('#wizard-button').hide()
 	$('#wizard-loading').show()
+	$('#wizard-refresh-roles').on('click', refreshRoles)
 	
 	var form = $('wizard-form')
 	var url = '/api/server/list'
@@ -17,7 +18,7 @@ $(document).ready(function(){
         success:function(response)
         {
         	$('#wizard-servers-div').html(response)
-        	$('#svname').on('change', onServerChange)
+        	$('#wizard-svname').on('change', onServerChanged)
         	$('#wizard-loading').hide()
         },
         error: function(response) {
@@ -29,8 +30,9 @@ $(document).ready(function(){
 		event.preventDefault();
 		$('#wizard-loading').show()
 		var role = $('#role').val()
-		if (!role) {
-			$("#error-message").text("Game role must be selected!")
+		var server = $('#svname').val()
+		if (!role || !server) {
+			$("#error-message").text("Game role/server must be selected!")
 			return
 		}
 		var url = $(this).attr('data-action');
@@ -54,15 +56,15 @@ $(document).ready(function(){
         })
 	})
 	
-	function onRoleChange(e) {
-		var role = $('#role').val()
-		if (role) $('#btn-next').show()
+	function onRoleSelected() {
+		event.preventDefault()
+		console.log('on role selected')
+		$('#wizard-button').show()
+		$('#wizard-loading').hide()
 	}
 	
-	
-	function onServerChange() {
+	function onServerChanged() {
 		$('#wizard-loading').show()
-		$('#btn-next').hide()
 		event.preventDefault()
 		var url = $(this).attr('data-action');
 		var updateId = $(this).attr('data-update-id')
@@ -82,7 +84,37 @@ $(document).ready(function(){
             	console.log(response)
             	$('#' + updateId).html(response)
             	$('#wizard-loading').hide()
-            	$('#role').on('change', onRoleChange)
+            	$('#role').on('change', onRoleSelected)
+            },
+            error: function(response) {
+            	$('#wizard-loading').hide()
+            }
+        });
+	}
+	
+	function refreshRoles() {
+		$('#wizard-loading').show()
+		event.preventDefault()
+		var url = $(this).attr('data-action');
+		var updateId = $(this).attr('data-update-id')
+		var param = new FormData();  
+		var svname = $('#wizard-svname').val()
+		param.append("svname", svname)
+		param.append("template", 'hanoivip::wizard-roles-partial')
+		$.ajax({
+            url: url,
+            method: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data: new URLSearchParams(param).toString(),
+            dataType : 'html',
+            cache: false,
+            processData: false,
+            success:function(response)
+            {
+            	console.log(response)
+            	$('#' + updateId).html(response)
+            	$('#wizard-loading').hide()
+            	$('#role').on('change', onRoleSelected)
             },
             error: function(response) {
             	$('#wizard-loading').hide()
