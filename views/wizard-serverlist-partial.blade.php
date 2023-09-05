@@ -1,5 +1,5 @@
 @if (!empty($servers))
-	<select id="svname" name="svname" style="width: 100%;" data-action="{{ route('game.roles') }}" 
+	<select id="wizard-svname" name="svname" data-action="{{ route('game.roles') }}" 
 		data-update-id="wizard-roles-div">
 		<option value="">Choose server</option>
 		@foreach ($servers as $sv)

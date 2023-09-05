@@ -1,5 +1,5 @@
 @if (!empty($roles))
-    <select id="role" name="role" style="width: 100%;">
+    <select id="role" name="role">
     	<option value="">Choose your role</option>
     	@foreach ($roles as $roleid => $rolename)
     		<option value="{{ $roleid }}">{{ $rolename }}</option>
