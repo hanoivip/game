@@ -13,6 +13,7 @@ use Hanoivip\Game\Services\ServerService;
 use Hanoivip\Game\Services\UserLogService;
 use Hanoivip\Payment\Facades\BalanceFacade;
 use Illuminate\Auth\Authenticatable;
+use Hanoivip\Events\Game\UserBuyItem;
 
 class GameController extends Controller
 {
@@ -149,6 +150,7 @@ class GameController extends Controller
 	    if ($result === true)
 	    {
 	        $reason = __('hanoivip.payment::balance.Recharge', ['server' => $server->title, 'item' => $recharge->title]);//"Recharge:" . $cointype . ":" . $coin . ":" . $server->title;
+	        event(new UserBuyItem($uid, $svname, $recharge->title, isset($params['roleid']) ? $params['roleid'] : 'default'));
     	    if (!BalanceFacade::remove($uid, $coin, $reason, $cointype))
     	    {
     	        Log::warning("Game charge user's balance fail. User {$uid} coin {$coin} type {$cointype}");
