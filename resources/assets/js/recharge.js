@@ -47,6 +47,8 @@ $(document).ready(function(){
 		var updateId = $(this).attr('data-update-id')
 		var param = new FormData();  
 		param.append("svname", this.value)
+		$('#recharge-loading').show()
+		$('#' + updateId).html('')
 		$.ajax({
             url: url,
             method: 'POST',
@@ -59,10 +61,12 @@ $(document).ready(function(){
             {
             	console.log(response)
             	$('#' + updateId).html(response)
+            	$('#recharge-loading').hide()
             },
             error: function(response) {
             	$("#error-message").text(response)
         		$("#error-message").show()
+        		$('#recharge-loading').hide()
             }
         });
 	})
@@ -76,6 +80,8 @@ $(document).ready(function(){
 		var param = new FormData();  
 		param.append("svname", svname)
 		var updateId = $(this).attr('data-update-id')
+		$('#recharge-loading').show()
+		$('#' + updateId).html()
 		$.ajax({
             url: url,
             method: 'POST',
@@ -88,10 +94,12 @@ $(document).ready(function(){
             {
             	console.log(response)
             	$('#' + updateId).html(response)
+            	$('#recharge-loading').hide()
             },
             error: function(response) {
             	$("#error-message").text(response)
         		$("#error-message").show()
+        		$('#recharge-loading').hide()
             }
         });
 	})
