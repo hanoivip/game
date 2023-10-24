@@ -21,13 +21,14 @@ $(document).ready(function(){
             processData: false,
             success:function(response)
             {
+            	//console.log(JSON.stringify(response))
             	if (response.message) {
             		$("#message").text(response.message)
             		$("#message").show()
             		$("#recharge-balance-refresh").click()
             	}
             	if (response.error_message) {
-            		$("#error-message").text(response.message)
+            		$("#error-message").text(response.error_message)
             		$("#error-message").show()
             	}
             	$("#btn-recharge").show()
