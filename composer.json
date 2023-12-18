@@ -2,13 +2,41 @@
 	"name" : "hanoivip/game",
 	"description" : "Play Game Component",
 	"type" : "library",
+	"repositories" : [
+		{
+			"type" : "path",
+			"url" : "../payment-method-contract",
+			"options" : {
+				"symlink" : true
+			}
+		}, {
+			"type" : "path",
+			"url" : "../events",
+			"options" : {
+				"symlink" : true
+			}
+		}, {
+			"type" : "path",
+			"url" : "../shop",
+			"options" : {
+				"symlink" : true
+			}
+		}, {
+			"type" : "path",
+			"url" : "../payment-contract",
+			"options" : {
+				"symlink" : true
+			}
+		}
+	],	
 	"require" : {
 		"php" : ">=7.0.0",
 		"fideloper/proxy" : "~4.0",
 		"laravel/framework" : ">=5.5",
 		"laravel/tinker" : "~1.0",
 		"hanoivip/payment-contract" : "dev-main",
-		"hanoivip/payment-method-contract" : "dev-main"
+		"hanoivip/payment-method-contract" : "dev-main",
+		"hanoivip/shop" : "dev-master"
 	},
 	"autoload" : {
 		"psr-4" : {

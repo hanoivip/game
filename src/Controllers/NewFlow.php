@@ -77,7 +77,7 @@ class NewFlow extends Controller
             if ($request->expectsJson())
             {
                 return [
-                    'error' => 0,
+                    'error_message' => 0,
                     'message' => 'success',
                     'data' => [['items' => $items, 'svname' => $svname, 'role' => $role, 'client' => $client]]
                 ];
@@ -89,7 +89,7 @@ class NewFlow extends Controller
         catch (Exception $ex)
         {
             Log::error("NewFlow show shop error:" . $ex->getMessage());
-            return view('hanoivip::newrecharge-failure', ['error' => __('hanoivip.game::newrecharge.shop-error')]);
+            return view('hanoivip::newrecharge-failure', ['error_message' => __('hanoivip.game::newrecharge.shop-error')]);
         }
     }
     /**
@@ -109,15 +109,14 @@ class NewFlow extends Controller
         $client=$request->input('client');
         try 
         {
-            //Log::debug("Start new flow of recharging...");
+            Log::debug("Start new flow of recharging...");
             $order = IapFacade::order(Auth::user(), $svname, $role, $item, $client);
-            //Log::debug("Create new order " . $order);
             return PaymentFacade::pay($order, 'newrecharge.done', $client);
         } 
         catch (Exception $ex) 
         {
             Log::error("NewFlow recharge exception: " . $ex->getMessage());
-            return view('hanoivip::newrecharge-failure', ['error' => __('hanoivip.game::newrecharge.recharge-error')]);
+            return view('hanoivip::newrecharge-failure', ['error_message' => __('hanoivip.game::newrecharge.recharge-error')]);
         }
     }
     
@@ -151,15 +150,16 @@ class NewFlow extends Controller
         try 
         {
             $result = $this->rechargeService->onPaymentCallback(Auth::user()->getAuthIdentifier(), $order, $receipt);
+            //Log::debug("Recharge done : " . print_r($result, true));
             if (gettype($result) == 'string')
             {
                 if ($request->ajax())
                 {
-                    return ['error' => 1, 'message' => $result, 'data' => []];
+                    return ['error_message' => 1, 'message' => $result, 'data' => []];
                 }
                 else
                 {
-                    return view('hanoivip::newrecharge-failure', ['error' => $result]);
+                    return view('hanoivip::newrecharge-failure', ['error_message' => $result]);
                 }
             }
             else 
@@ -170,7 +170,7 @@ class NewFlow extends Controller
                     dispatch(new CheckPendingReceipt(Auth::user()->getAuthIdentifier(), $order, $receipt))->delay(60);
                     if ($request->ajax())
                     {
-                        return ['error' => 0, 'message' => 'pending', 'data' => ['trans' => $receipt, 'detail' => $result->getDetail()]];
+                        return ['error_message' => 0, 'message' => 'pending', 'data' => ['trans' => $receipt, 'detail' => $result->getDetail()]];
                     }
                     else
                     {
@@ -181,18 +181,18 @@ class NewFlow extends Controller
                 {
                     if ($request->ajax())
                     {
-                        return ['error' => 2, 'message' => $result->getDetail(), 'data' => []];
+                        return ['error_message' => 2, 'message' => $result->getDetail(), 'data' => []];
                     }
                     else
                     {
-                        return view('hanoivip::newrecharge-failure', ['error' => $result->getDetail()]);
+                        return view('hanoivip::newrecharge-failure', ['error_message' => $result->getDetail()]);
                     }
                 }
                 else
                 {
                     if ($request->ajax())
                     {
-                        return ['error' => 0, 'message' => 'success', 'data' => []];
+                        return ['error_message' => 0, 'message' => 'success', 'data' => []];
                     }
                     else
                     {
@@ -206,11 +206,11 @@ class NewFlow extends Controller
             Log::error("NewFlow recharge callback exception: " . $ex->getMessage() . $ex->getTraceAsString());
             if ($request->ajax())
             {
-                return ['error' => 3, 'message' => __('hanoivip.game::newrecharge.callback-error'), 'data' => []];
+                return ['error_message' => 3, 'message' => __('hanoivip.game::newrecharge.callback-error'), 'data' => []];
             }
             else
             {
-                return view('hanoivip::newrecharge-failure', ['error' => __('hanoivip.game::newrecharge.callback-error')]);
+                return view('hanoivip::newrecharge-failure', ['error_message' => __('hanoivip.game::newrecharge.callback-error')]);
             }
         }
     }
@@ -223,7 +223,7 @@ class NewFlow extends Controller
             $result = $this->rechargeService->query(Auth::user()->getAuthIdentifier(), $trans);
             if (gettype($result) == 'string')
             {
-                return view('hanoivip::newrecharge-failure', ['error' => $result]);
+                return view('hanoivip::newrecharge-failure', ['error_message' => $result]);
             }
             else 
             {
@@ -234,7 +234,7 @@ class NewFlow extends Controller
                 }
                 elseif ($result->isFailure())
                 {
-                    return view('hanoivip::newrecharge-failure', ['error' => $result->getDetail()]);
+                    return view('hanoivip::newrecharge-failure', ['error_message' => $result->getDetail()]);
                 }
                 else
                 {
@@ -245,7 +245,7 @@ class NewFlow extends Controller
         catch (Exception $ex)
         {
             Log::error("NewFlow query trans exception: " . $ex->getMessage());
-            return view('hanoivip::newrecharge-failure', ['error' => __('hanoivip.game::newrecharge.query-error')]);
+            return view('hanoivip::newrecharge-failure', ['error_message' => __('hanoivip.game::newrecharge.query-error')]);
         }
     }
     /**
@@ -262,7 +262,7 @@ class NewFlow extends Controller
             $result = $this->rechargeService->history(Auth::user()->getAuthIdentifier(), $page);
             if ($request->ajax())
             {
-                return ['error' => 0, 'message' => 'success', 'data' => ['history' => $result[0], 'total_page' => $result[1]]];
+                return ['error_message' => 0, 'message' => 'success', 'data' => ['history' => $result[0], 'total_page' => $result[1]]];
             }
             else
             {
@@ -272,7 +272,7 @@ class NewFlow extends Controller
         catch (Exception $ex)
         {
             Log::error("NewFlow query trans exception: " . $ex->getMessage());
-            return view('hanoivip::newrecharge-failure', ['error' => __('hanoivip.game::newrecharge.query-error')]);
+            return view('hanoivip::newrecharge-failure', ['error_message' => __('hanoivip.game::newrecharge.query-error')]);
         }
     }
 
