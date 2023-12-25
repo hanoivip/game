@@ -174,17 +174,7 @@ class NewFlow extends Controller
                     }
                     else
                     {
-                        // TODO: move view to payment method
-                        $record = PaymentFacade::get($receipt);
-                        if (view()->exists("hanoivip::newrecharge-" . $record->method . "-result-pending"))
-                        {
-                            $view = "hanoivip::newrecharge-" . $record->method . "-result-pending";
-                        }
-                        else
-                        {
-                            $view = 'hanoivip::newrecharge-result-pending';
-                        }
-                        return view($view, ['trans' => $receipt, 'detail' => $result->getDetail()]);
+                        return view('hanoivip::newrecharge-result-pending', ['trans' => $receipt, 'detail' => $result->getDetail()]);
                     }
                 }
                 elseif ($result->isFailure())
