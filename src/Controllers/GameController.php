@@ -131,7 +131,9 @@ class GameController extends Controller
 		return view('hanoivip::recharge', $viewData);
 	}
 	
-	// move from service to here
+	/**
+	 * Flow 1: topup & exchange/recharge flow
+	 */
 	private function _recharge($svname, $user, $package, $params, $balanceType = 0)
 	{
 	    $server = $this->servers->getServerByName($svname);
@@ -146,7 +148,7 @@ class GameController extends Controller
 	        Log::error("Game user not enough coin");
 	        return __('hanoivip.game::recharge.not-enough-coin');
 	    }
-	    $result = $this->games->recharge($svname, $user, $package, $params);
+	    $result = $this->games->recharge($svname, $user, $package, $params['roleid']);
 	    if ($result === true)
 	    {
 	        $reason = __('hanoivip.payment::balance.Recharge', ['server' => $server->title, 'item' => $recharge->title]);//"Recharge:" . $cointype . ":" . $coin . ":" . $server->title;

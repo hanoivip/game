@@ -35,83 +35,59 @@ class GameService
         $this->operator = $operator;
     }
     /**
-     * Protocol defined:
-     * http://game.login.uri/login.php?user=$uid&svname=$svname&key=$loginkey
-     * 
-     * Return json:
-     * + code = 0: success.
-     * + iframe
-     * 
-     * @param ServerVO $server
-     * @param UserVO $user
-     * @throws Exception
-     * @return string Game url
-     */
-    public function enter($server, $user)
-    {
-        if (!$server->can_enter)
-        {
-            Log::debug("Game server is set not to enter now.");
-            return 'message=' . $server->gm_message;
-        }
-        $onlines = $this->onlines();
-        if (isset($onlines[$server->name]))
-        {
-            if ($server->max_online > 0 &&
-                $onlines[$server->name] + 1 > $server->max_online)
-            {
-                Log::debug("Game server is full.");
-                return 'message=Game server is full';
-            }
-        }
-        //TODO: make EnterResponse here;
-        $uri = $this->operator->enter($user, $server);
-        if (empty($uri))
-        {
-            Log::error("Game enter uri is empty");
-            throw new Exception("Máy chủ đang bảo trì. Vui lòng thử lại sau hoặc liên hệ GM.");
-        }
-        $this->logs->logEnter($user->getAuthIdentifier(), $server);
-        event(new UserPlay($user->getAuthIdentifier(), $server->name));
-        return 'uri=' . $uri;
-    }
-    /**
      * Non-thread-safe recharge
      * 
      * @param string $server Server name
      * @param UserVO $user
      * @param string $item Recharge package code
      * @param array $params
-     * @param UserVO $receiver
      * @return true|string true if success or string error detail
      */
-    public function recharge($serverName, $user, $item, $params, $receiver = null)
+    public function recharge($serverName, $user, $package, $role)
     {
         $server = $this->servers->getServerByName($serverName);
-        $recharge = Recharge::where('code', $item)->first();
+        //$recharge = Recharge::where('code', $item)->first();
         // Process
         $uid = $user->getAuthIdentifier();
-        $package = $recharge->code;
-        $coin = $recharge->coin;
-        $cointype = $recharge->coin_type;
+        //$package = $recharge->code;
+        //$coin = $recharge->coin;
+        //$cointype = $recharge->coin_type;
         $order = uniqid();
         try
         {
-            $realReceiver = !empty($receiver) ? $receiver : $user;
-            if (!$this->operator->recharge($realReceiver, $server, $order, $recharge, $params))
+            if (!$this->operator->buyPackage($user, $server, $order, $package, $role))
             {
                 Log::error("Game game operator return fail.");
                 return __('hanoivip.game::recharge.ops-recharge-fail');
             }
-            $this->logs->logRecharge($uid, $server, $package, $order, $realReceiver->getAuthIdentifier());
+            $this->logs->logRecharge($uid, $server, $package, $order, $user->getAuthIdentifier());
         }
         catch (Exception $ex)
         {
             Log::error("Game game operator exception. Ex:" . $ex->getMessage());
             return __('hanoivip.game::recharge.ops-recharge-ex');
         }
-        // Event
-        event(new UserRecharge($uid, $cointype, $coin, $server->name, $params));
+        return true;
+    }
+    public function rechargeByMoney($serverName, $user, $amount, $role)
+    {
+        $server = $this->servers->getServerByName($serverName);
+        $uid = $user->getAuthIdentifier();
+        $order = uniqid();
+        try
+        {
+            if (!$this->operator->buyByMoney($user, $server, $order, $amount, $role))
+            {
+                Log::error("Game game operator return fail.");
+                return __('hanoivip.game::recharge.ops-recharge-fail');
+            }
+            //$this->logs->logRecharge($uid, $server, $amount, $order, $user->getAuthIdentifier());
+        }
+        catch (Exception $ex)
+        {
+            Log::error("Game game operator exception. Ex:" . $ex->getMessage());
+            return __('hanoivip.game::recharge.ops-recharge-ex');
+        }
         return true;
     }
     /**
@@ -178,13 +154,12 @@ class GameService
      * @param array $params
      * @param UserVO $receiver
      */
-    public function sendItem($serverName, $user, $itemId, $itemCount, $params = null, $receiver = null)
+    public function sendItem($serverName, $user, $itemId, $itemCount, $role)
     {
         $server = $this->servers->getServerByName($serverName);
         // Send Item to game
         $order = uniqid();
-        $realReceiver = empty($receiver) ? $user : $receiver;
-        if (!$this->operator->sentItem($realReceiver, $server, $order, $itemId, $itemCount, $params))
+        if (!$this->operator->sentItem($user, $server, $order, $itemId, $itemCount, $role))
         {
             Log::error("Game request item exchange fail.");
             return false;

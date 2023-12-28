@@ -22,12 +22,9 @@ class GameHelper
      * @param number $count
      * @param string $role Player Role ID
      */
-    public function sendItem($userId, $server, $item, $count, $role, $receiverId = 0)
+    public function sendItem($userId, $server, $item, $count, $role)
     {
-        if (empty($receiverId))
-            return $this->game->sendItem($server, new UserVO($userId, ""), $item, $count, ['roleid' => $role]);
-        else 
-            return $this->game->sendItem($server, new UserVO($userId, ""), $item, $count, ['roleid' => $role], new UserVO($receiverId, ""));
+        return $this->game->sendItem($server, new UserVO($userId, ""), $item, $count, $role);
     }
     /**
      * 
@@ -37,12 +34,14 @@ class GameHelper
      * @param string $role Role id
      * @param number $receiverId
      */
-    public function recharge($userId, $server, $package, $role, $receiverId = 0)
+    public function recharge($userId, $server, $package, $role)
     {
-        if (empty($receiverId))
-            return $this->game->recharge($server, new UserVO($userId, ""), $package, ['roleid' => $role]);
-        else
-            return $this->game->recharge($server, new UserVO($userId, ""), $package, ['roleid' => $role], new UserVO($receiverId, ""));
+        return $this->game->recharge($server, new UserVO($userId, ""), $package, $role);
+    }
+    
+    public function rechargeByMoney($userId, $server, $amount, $role)
+    {
+        return $this->game->rechargeByMoney($server, new UserVO($userId, ""), $amount, $role);
     }
     
     public function getRechargePackages()

@@ -5,7 +5,6 @@ namespace Hanoivip\Game\Controllers;
 use App\Http\Controllers\Controller;
 use Hanoivip\Game\Jobs\CheckPendingReceipt;
 use Hanoivip\Game\Services\RechargeService;
-use Hanoivip\IapContract\Facades\IapFacade;
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,9 +58,11 @@ class NewFlow extends Controller
         }
         return redirect()->route('wizard.role', ['next' => 'newrecharge.shop']);
     }
-    
+    /**
+     * TODO: refactor this method??
+     */
     public function showShop(Request $request)
-    {
+    {/*
         $svname=$request->input('svname');
         $role=$request->input('role');
         $client=session()->get('client', 'app');
@@ -90,9 +91,10 @@ class NewFlow extends Controller
         {
             Log::error("NewFlow show shop error:" . $ex->getMessage());
             return view('hanoivip::newrecharge-failure', ['error_message' => __('hanoivip.game::newrecharge.shop-error')]);
-        }
+        }*/
     }
     /**
+     * TODO: rebuilt this method
      * Recharge game with new flow
      * + Select server&role
      * + Create order
@@ -102,7 +104,7 @@ class NewFlow extends Controller
      * @param Request $request
      */
     public function recharge(Request $request)
-    {
+    {/*
         $svname=$request->input('svname');
         $role=$request->input('role');
         $item=$request->input('item');
@@ -117,7 +119,7 @@ class NewFlow extends Controller
         {
             Log::error("NewFlow recharge exception: " . $ex->getMessage());
             return view('hanoivip::newrecharge-failure', ['error_message' => __('hanoivip.game::newrecharge.recharge-error')]);
-        }
+        }*/
     }
     
     private function isAppReceipt($receipt)
