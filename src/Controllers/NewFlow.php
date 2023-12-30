@@ -5,7 +5,6 @@ namespace Hanoivip\Game\Controllers;
 use App\Http\Controllers\Controller;
 use Hanoivip\Game\Jobs\CheckPendingReceipt;
 use Hanoivip\Game\Services\RechargeService;
-use Hanoivip\PaymentContract\Facades\PaymentFacade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -59,7 +58,7 @@ class NewFlow extends Controller
         return redirect()->route('wizard.role', ['next' => 'newrecharge.shop']);
     }
     /**
-     * TODO: refactor this method??
+     * TODO: refactor this method for app client
      */
     public function showShop(Request $request)
     {/*

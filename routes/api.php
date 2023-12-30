@@ -14,6 +14,7 @@ Route::middleware([
     Route::any('/purchase/callback', 'NewFlow@rechargeDone');
     // payment history
     Route::any('/payment/history', 'NewFlow@history');
+    Route::any('/wizard/save', 'WizardController@saveDefaultRole')->name('wizard.save');
 });
     
 Route::namespace('Hanoivip\Game\Controllers')

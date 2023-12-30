@@ -62,4 +62,9 @@ class GameHelper
     {
         return $this->game->transferAccount($oldUserId, $newUserId);
     }
+    
+    public function getUserDefaultRole($userId)
+    {
+        return $this->game->getUserDefaultRole($userId);
+    }
 }

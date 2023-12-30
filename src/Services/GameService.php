@@ -2,18 +2,16 @@
 
 namespace Hanoivip\Game\Services;
 
+use Hanoivip\Events\Game\UserTransfered;
 use Hanoivip\Game\Recharge;
-use Hanoivip\GameContracts\ViewObjects\ServerVO;
-use Hanoivip\GameContracts\ViewObjects\UserVO;
 use Hanoivip\GameContracts\Contracts\IGameOperator;
 use Hanoivip\GameContracts\Contracts\ServerState;
-use Carbon\Carbon;
-use Exception;
-use Illuminate\Support\Facades\Cache;
+use Hanoivip\GameContracts\ViewObjects\ServerVO;
+use Hanoivip\GameContracts\ViewObjects\UserGameRoleVO;
+use Hanoivip\GameContracts\ViewObjects\UserVO;
 use Illuminate\Support\Facades\Log;
-use Hanoivip\Events\Game\UserRecharge;
-use Hanoivip\Events\Game\UserPlay;
-use Hanoivip\Events\Game\UserTransfered;
+use Exception;
+use Hanoivip\Game\DefaultRole;
 
 class GameService
 {
@@ -167,8 +165,6 @@ class GameService
         return true; 
     }
     /**
-     * Query and cached info
-     * 
      * @param UserVO $user
      * @param ServerVO|string $server
      */
@@ -212,5 +208,28 @@ class GameService
             event(new UserTransfered($fromUser, $toUser));
         }
         return $result;
+    }
+    /**
+     * 
+     * @param number $userId
+     * @return UserGameRoleVO
+     */
+    public function getUserDefaultRole($userId)
+    {
+        return DefaultRole::where('user_id', $userId)->first();
+    }
+    
+    public function saveUserDefaultRole($userId, $server, $role)
+    {
+        $record = DefaultRole::where('user_id', $userId)->first();
+        if (empty($record))
+        {
+            $record = new DefaultRole();
+            $record->user_id = $userId;
+        }
+        $record->server = $server;
+        $record->role = $role;
+        $record->save();
+        return true;
     }
 }

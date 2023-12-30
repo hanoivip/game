@@ -2,6 +2,8 @@ $(document).ready(function(){
 	$('#wizard-button').hide()
 	$('#wizard-loading').show()
 	$('#wizard-refresh-roles').on('click', refreshRoles)
+	$('#save-role').on('click', saveDefaultRole)
+	$('#use-saved-role').on('change', reselectRole)
 	
 	var form = $('wizard-form')
 	var url = '/api/server/list'
@@ -61,6 +63,7 @@ $(document).ready(function(){
 		console.log('on role selected')
 		$('#wizard-button').show()
 		$('#wizard-loading').hide()
+		$('#save-role').show()
 	}
 	
 	function onServerChanged() {
@@ -93,6 +96,7 @@ $(document).ready(function(){
 	}
 	
 	function refreshRoles() {
+		$('#save-role').hide()
 		$('#wizard-loading').show()
 		event.preventDefault()
 		var url = $(this).attr('data-action');
@@ -115,6 +119,40 @@ $(document).ready(function(){
             	$('#' + updateId).html(response)
             	$('#wizard-loading').hide()
             	$('#role').on('change', onRoleSelected)
+            },
+            error: function(response) {
+            	$('#wizard-loading').hide()
+            }
+        });
+	}
+	
+	function reselectRole() {
+		$('#wizard-selected').hide()
+		$('#wizard-reselect').show()
+	}
+	
+	function saveDefaultRole() {
+		$('#wizard-loading').show()
+		event.preventDefault()
+		var url = $(this).attr('data-action');
+		var updateId = $(this).attr('data-update-id')
+		var param = new FormData();  
+		var svname = $('#wizard-svname').val()
+		var role= $('#role').val()
+		param.append("svname", svname)
+		param.append("role", role)
+		$.ajax({
+            url: url,
+            method: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data: new URLSearchParams(param).toString(),
+            dataType : 'html',
+            cache: false,
+            processData: false,
+            success:function(response)
+            {
+            	console.log(response)
+            	$('#wizard-loading').hide()
             },
             error: function(response) {
             	$('#wizard-loading').hide()

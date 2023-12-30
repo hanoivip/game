@@ -7,10 +7,8 @@ use Hanoivip\Game\Services\RechargeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
-use Hanoivip\Game\RechargeLog;
 use Hanoivip\PaymentContract\Facades\PaymentFacade;
 use Hanoivip\Payment\Models\Transaction;
-use Hanoivip\IapContract\Facades\IapFacade;
 use Hanoivip\Game\Jobs\CheckPendingReceipt;
 
 class Admin extends Controller
