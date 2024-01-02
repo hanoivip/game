@@ -9,7 +9,6 @@ Route::middleware('web', 'auth:web')->namespace('Hanoivip\Game\Controllers')->gr
     //Route::post('/recharge/result', 'GameController@doRecharge')->name('doRecharge');
     Route::get('/recharge/result-success', 'GameController@onRechargeSuccess')->name('recharge.success');
     Route::get('/recharge/result-fail', 'GameController@onRechargeFail')->name('recharge.fail');
-    //Route::any('/recharge/role', 'GameController@webQueryRoles')->name('game.roles');
     //Util: server role wizard, can save for further
     Route::get('/wizard/role', 'WizardController@chooseRole')->name('wizard.role');
     /*

@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Log;
 use Exception;
 use Hanoivip\Game\Services\ServerService;
 
+/**
+ * @deprecated
+ * @author GameOH
+ *
+ */
 class NewFlow extends Controller
 {   
     private $rechargeService;
