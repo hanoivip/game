@@ -67,4 +67,9 @@ class GameHelper
     {
         return $this->game->getUserDefaultRole($userId);
     }
+    
+    public function saveUserDefaultRole($userId, $svname, $roleId)
+    {
+        return $this->game->saveUserDefaultRole($userId, $svname, $roleId);
+    }
 }
