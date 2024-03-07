@@ -17,3 +17,13 @@ if (! function_exists('show_user_servers'))
         return view('hanoivip::serverlist-partial', ['servers' => $servers]);
     }
 }
+
+
+if (! function_exists('show_all_servers'))
+{
+    function show_all_servers()
+    {
+        $servers = ServerFacade::getAll();
+        return view('hanoivip::serverlist-partial', ['servers' => $servers]);
+    }
+}

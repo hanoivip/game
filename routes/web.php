@@ -17,3 +17,20 @@ Route::middleware('web')->namespace('Hanoivip\Game\Controllers')->group(function
     //Route::get('/server-list', 'GameController@serverlist')->name('server-list');
     Route::get('/rank', 'GameController@webGetRank')->name('rank');
 });
+
+Route::middleware([
+    'web',
+    'admin'
+])->namespace('Hanoivip\Game\Controllers')
+->prefix('ecmin')
+->group(function () {
+    // recharge for myself
+    Route::get('/recharge', 'AdminController@recharge')->name('ecmin.recharge');
+    // recharge for other player
+    Route::get('/recharge4other', 'AdminController@recharge4other')->name('ecmin.recharge.other');
+    Route::post('/recharge/do', 'AdminController@doRecharge')->name('ecmin.recharge.do');
+    // manage servers..
+    Route::get('/server', 'AdminController@serverInfo')->name('ecmin.server');
+    Route::post('/server/remove', 'AdminController@removeServer')->name('ecmin.server.remove');
+    Route::post('/server/add', 'AdminController@addServer')->name('ecmin.server.add');
+});
