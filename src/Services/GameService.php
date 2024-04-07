@@ -232,4 +232,10 @@ class GameService
         $record->save();
         return true;
     }
+    
+    public function getOrderDetail($server, $order)
+    {
+        $serverRec = $this->servers->getServerByName($server);
+        return $this->operator->orderDetail(null, $serverRec, $order);
+    }
 }

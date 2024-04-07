@@ -72,4 +72,13 @@ class GameHelper
     {
         return $this->game->saveUserDefaultRole($userId, $svname, $roleId);
     }
+    /**
+     * 
+     * @param string $order Order ..
+     * @param string $server Server Name, like s1, s2...
+     */
+    public function getOrderDetail($order, $server)
+    {
+        return $this->game->getOrderDetail($server, $order);
+    }
 }
