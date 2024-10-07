@@ -4,8 +4,9 @@ namespace Hanoivip\Game\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Exception;
 use Hanoivip\Game\Services\GameService;
-use Hanoivip\Payment\Facades\BalanceFacade;
 use Hanoivip\Game\Services\ServerService;
 use Hanoivip\Game\Facades\GameHelper;
 use Hanoivip\Events\Server\ServerCreated;

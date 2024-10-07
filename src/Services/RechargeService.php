@@ -76,7 +76,7 @@ class RechargeService
             {
                 // first time to process success
                 $log->status = 3;
-                $amount = intval($result->getAmount());
+                $amount = $result->getAmount();
                 $amountCur = $result->getCurrency();
                 $orderDetail = OrderFacade::detail($order);
                 $price = $orderDetail->price;
